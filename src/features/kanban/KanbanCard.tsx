@@ -54,7 +54,9 @@ export function KanbanCard({
             </span>
           )}
           {card.agendado_por_ia && (
-            <Sparkles className="h-3 w-3 text-primary/80" title="Agendado por IA" />
+            <span title="Agendado por IA" className="inline-flex">
+              <Sparkles className="h-3 w-3 text-primary/80" />
+            </span>
           )}
         </div>
       </div>

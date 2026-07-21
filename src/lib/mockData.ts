@@ -21,17 +21,18 @@ export const mockProcedimentos: Procedimento[] = [
 ];
 
 export const mockClientes: Cliente[] = [
-  { id: "c1", nome: "Marina Albuquerque", telefone: "+55 11 99988-1122", atendimento_ia: true, setor: "VIP", origem: "instagram" },
-  { id: "c2", nome: "Sofia Bertolini", telefone: "+55 11 98877-2233", atendimento_ia: false, setor: "Premium", origem: "whatsapp" },
-  { id: "c3", nome: "Renata Vasconcellos", telefone: "+55 11 97766-3344", atendimento_ia: true, setor: "VIP", origem: "instagram" },
-  { id: "c4", nome: "Luiza Carvalho", telefone: "+55 11 96655-4455", atendimento_ia: false, origem: "whatsapp" },
-  { id: "c5", nome: "Beatriz Sanford", telefone: "+55 11 95544-5566", atendimento_ia: true, setor: "Premium", origem: "instagram" },
-  { id: "c6", nome: "Helena Drummond", telefone: "+55 11 94433-6677", atendimento_ia: false, origem: "whatsapp" },
-  { id: "c7", nome: "Ana Lívia Castro", telefone: "+55 11 93322-7788", atendimento_ia: true, origem: "whatsapp" },
-  { id: "c8", nome: "Mariana Toledo", telefone: "+55 11 92211-8899", atendimento_ia: false, setor: "VIP", origem: "instagram" },
-  { id: "c9", nome: "Fernanda Lopes", telefone: "+55 11 91100-9900", atendimento_ia: true, origem: "instagram" },
-  { id: "c10", nome: "Juliana Ramos", telefone: "+55 11 90099-8811", atendimento_ia: false, origem: "whatsapp" },
+  { id: "c1", nome: "Marina Albuquerque", telefone: "+55 11 99988-1122", atendimento_ia: true, setor: "VIP", origem: "instagram", temperatura: "quente" },
+  { id: "c2", nome: "Sofia Bertolini", telefone: "+55 11 98877-2233", atendimento_ia: false, setor: "Premium", origem: "whatsapp", temperatura: "morno" },
+  { id: "c3", nome: "Renata Vasconcellos", telefone: "+55 11 97766-3344", atendimento_ia: true, setor: "VIP", origem: "instagram", aguardando_humano: true, temperatura: "quente" },
+  { id: "c4", nome: "Luiza Carvalho", telefone: "+55 11 96655-4455", atendimento_ia: false, origem: "whatsapp", temperatura: "frio" },
+  { id: "c5", nome: "Beatriz Sanford", telefone: "+55 11 95544-5566", atendimento_ia: true, setor: "Premium", origem: "instagram", temperatura: "morno" },
+  { id: "c6", nome: "Helena Drummond", telefone: "+55 11 94433-6677", atendimento_ia: false, origem: "whatsapp", temperatura: "quente" },
+  { id: "c7", nome: "Ana Lívia Castro", telefone: "+55 11 93322-7788", atendimento_ia: true, origem: "whatsapp", temperatura: "morno" },
+  { id: "c8", nome: "Mariana Toledo", telefone: "+55 11 92211-8899", atendimento_ia: false, setor: "VIP", origem: "instagram", temperatura: "frio" },
+  { id: "c9", nome: "Fernanda Lopes", telefone: "+55 11 91100-9900", atendimento_ia: true, origem: "instagram", aguardando_humano: true, temperatura: "quente" },
+  { id: "c10", nome: "Juliana Ramos", telefone: "+55 11 90099-8811", atendimento_ia: false, origem: "whatsapp", temperatura: "morno" },
 ];
+
 
 const now = new Date();
 const iso = (d: Date) => d.toISOString();

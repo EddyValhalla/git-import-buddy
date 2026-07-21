@@ -1,82 +1,43 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useRef, useState, useEffect } from "react";
-import imageCompression from "browser-image-compression";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ProtectedLayout } from "@/components/layout/ProtectedLayout";
-import { useClientes, useProntuarios, useFotos, crmStore } from "@/lib/store";
+import { useClientes, crmStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Upload,
-  MessagesSquare,
-  Phone,
-  Sparkles,
-  ImageIcon,
-  Loader2,
-  Trash2,
-  HeartPulse,
-  User,
   Send,
+  Sparkles,
+  User,
+  Headset,
   Instagram,
+  Store,
+  ExternalLink,
+  Hand,
+  Bot,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-interface Message {
-  id: string;
-  sender: "client" | "user" | "ia";
-  text: string;
-  time: string;
-}
-
-const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" {...props}>
-    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.713-1.458L0 24zm6.59-4.846c1.6.95 3.488 1.459 5.407 1.461 5.432.001 9.851-4.417 9.855-9.848.002-2.63-1.018-5.101-2.872-6.958-1.855-1.856-4.328-2.879-6.963-2.88-5.438 0-9.859 4.417-9.864 9.849-.002 1.83.479 3.619 1.393 5.185l-.994 3.633 3.725-.977zm10.165-6.843c-.269-.135-1.593-.786-1.84-.876-.247-.09-.427-.135-.607.135-.18.271-.696.876-.853 1.057-.157.18-.315.203-.584.068-1.745-.87-2.91-1.464-4.062-2.446-.304-.518.304-.481.872-1.615.09-.18.045-.338-.023-.473-.068-.135-.607-1.462-.832-2.003-.219-.527-.46-.454-.607-.461-.135-.006-.292-.007-.449-.007-.157 0-.413.059-.629.293-.216.234-.824.805-.824 1.963 0 1.158.843 2.278.96 2.435.117.157 1.66 2.534 4.021 3.55 1.714.736 2.441.802 3.3.676.452-.066 1.393-.569 1.593-1.12.2-.55.2-1.02.14-1.12-.06-.099-.24-.157-.509-.292z"/>
-  </svg>
-);
-
-const mockConversas: Record<string, { whatsapp: Message[]; instagram: Message[] }> = {
-  c1: {
-    whatsapp: [
-      { id: "w1", sender: "client", text: "Olá! Gostaria de tirar algumas dúvidas sobre a aplicação de toxina botulínica.", time: "14:30" },
-      { id: "w2", sender: "ia", text: "Olá Marina! Claro, a toxina botulínica (Botox) é excelente para suavizar linhas de expressão na testa, glabela (entre as sobrancelhas) e pés de galinha. Nossos valores variam conforme a quantidade de unidades necessárias. Gostaria de agendar uma avaliação cortesia?", time: "14:32" },
-      { id: "w3", sender: "client", text: "Sim, eu quero! Vocês têm horário para esta semana ainda?", time: "14:35" },
-    ],
-    instagram: [
-      { id: "ig1", sender: "client", text: "Olá! Vi as fotos de antes e depois do preenchimento labial no feed. Ficou maravilhoso! Vocês usam qual marca?", time: "Ontem" },
-      { id: "ig2", sender: "user", text: "Olá Marina! Que bom que gostou! Trabalhamos apenas com preenchedores premium de alta durabilidade, como Restylane e Juvederm. Fica super natural!", time: "Ontem" },
-    ],
-  },
-  c2: {
-    whatsapp: [
-      { id: "w1", sender: "client", text: "Bom dia! Meu retorno de preenchimento labial seria quando?", time: "10:15" },
-      { id: "w2", sender: "user", text: "Olá Sofia! Geralmente o retorno para avaliação pós-procedimento é feito em 15 dias. Vamos agendar para a próxima quarta?", time: "10:20" },
-    ],
-    instagram: [
-      { id: "ig1", sender: "client", text: "Amei o atendimento da clínica! Indicarei para minhas amigas.", time: "Segunda" },
-      { id: "ig2", sender: "user", text: "Que alegria saber disso, Sofia! Ficamos muito felizes com seu feedback. Esperamos você de volta em breve!", time: "Segunda" },
-    ],
-  },
-  c3: {
-    whatsapp: [
-      { id: "w1", sender: "client", text: "Olá! Queria saber sobre o sculptra.", time: "Terça" },
-      { id: "w2", sender: "ia", text: "Olá Renata! O Sculptra é um bioestimulador de colágeno incrível que melhora a firmeza e a textura da pele de forma gradual. O tratamento completo costuma necessitar de 2 a 3 sessões. Vamos agendar uma avaliação?", time: "Terça" },
-    ],
-    instagram: [
-      { id: "ig1", sender: "client", text: "Vocês atendem aos sábados?", time: "Terça" },
-      { id: "ig2", sender: "user", text: "Olá Renata! Sim, atendemos aos sábados sob agendamento prévio, das 9h às 14h. Qual sábado ficaria melhor para você?", time: "Terça" },
-    ],
-  },
-};
+import type { Cliente, Mensagem } from "@/lib/types";
 
 export const Route = createFileRoute("/atendimento")({
+  head: () => ({
+    meta: [
+      { title: "Central de Atendimento | CRM Clínica" },
+      {
+        name: "description",
+        content:
+          "Monitore conversas em tempo real, assuma o atendimento quando necessário e devolva para a IA.",
+      },
+      { property: "og:title", content: "Central de Atendimento Humano" },
+      {
+        property: "og:description",
+        content:
+          "Painel de supervisão das conversas entre IA e clientes com controle humano.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: () => (
     <ProtectedLayout>
       <AtendimentoPage />
@@ -84,437 +45,456 @@ export const Route = createFileRoute("/atendimento")({
   ),
 });
 
-function AtendimentoPage() {
-  const clientes = useClientes();
-  const prontuarios = useProntuarios();
-  const fotosGlobal = useFotos();
+const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
+    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.713-1.458L0 24zm6.59-4.846c1.6.95 3.488 1.459 5.407 1.461 5.432.001 9.851-4.417 9.855-9.848.002-2.63-1.018-5.101-2.872-6.958-1.855-1.856-4.328-2.879-6.963-2.88-5.438 0-9.859 4.417-9.864 9.849-.002 1.83.479 3.619 1.393 5.185l-.994 3.633 3.725-.977z" />
+  </svg>
+);
 
-  const [activeId, setActiveId] = useState(clientes[0]?.id || "");
-  const active = clientes.find((c) => c.id === activeId) || clientes[0];
+type ConvStatus = "ia_ativa" | "humano_assumiu" | "aguardando_humano";
 
-  const [uploading, setUploading] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
+function getStatus(c: Cliente): ConvStatus {
+  if (c.aguardando_humano) return "aguardando_humano";
+  return c.atendimento_ia ? "ia_ativa" : "humano_assumiu";
+}
 
-  // Conversas state
-  const [conversas, setConversas] = useState(mockConversas);
-  const [inputText, setInputText] = useState("");
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+const statusMeta: Record<ConvStatus, { label: string; dot: string; text: string }> = {
+  ia_ativa: { label: "IA ativa", dot: "bg-emerald-500", text: "text-emerald-700" },
+  humano_assumiu: { label: "Humano assumiu", dot: "bg-rose-500", text: "text-rose-700" },
+  aguardando_humano: { label: "Aguardando humano", dot: "bg-amber-500", text: "text-amber-700" },
+};
 
-  // Auto-scroll when activeId or conversas change
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [conversas, activeId]);
+const temperaturaEmoji = { quente: "🔥", morno: "🌡️", frio: "🧊" } as const;
 
-  const handleSendMessage = (channel: "whatsapp" | "instagram") => {
-    if (!inputText.trim()) return;
-    const newMsg: Message = {
-      id: Math.random().toString(36).substring(7),
-      sender: "user",
-      text: inputText.trim(),
-      time: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
-    };
+function OrigemIcon({ origem, className }: { origem?: Cliente["origem"]; className?: string }) {
+  if (origem === "whatsapp")
+    return <WhatsAppIcon className={cn("h-3.5 w-3.5 text-emerald-600", className)} />;
+  if (origem === "instagram")
+    return <Instagram className={cn("h-3.5 w-3.5 text-rose-500", className)} />;
+  return <Store className={cn("h-3.5 w-3.5 text-muted-foreground", className)} />;
+}
 
-    setConversas((prev) => {
-      const clientChat = prev[activeId] || { whatsapp: [], instagram: [] };
-      return {
-        ...prev,
-        [activeId]: {
-          ...clientChat,
-          [channel]: [...(clientChat[channel] || []), newMsg],
-        },
-      };
-    });
-    setInputText("");
-  };
+function timeAgo(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return "agora";
+  if (m < 60) return `há ${m} min`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `há ${h}h`;
+  const d = Math.floor(h / 24);
+  return `há ${d}d`;
+}
 
-  // Form states for Anamnese
-  const [alergias, setAlergias] = useState("");
-  const [medicamentos, setMedicamentos] = useState("");
-  const [gestante, setGestante] = useState("Não");
-  const [cirurgias, setCirurgias] = useState("");
-  const [observacoes, setObservacoes] = useState("");
+function formatTime(iso: string): string {
+  return new Date(iso).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+}
 
-  // Sync form states with active patient
-  useEffect(() => {
-    if (activeId) {
-      const p = prontuarios[activeId] ?? {
-        alergias: "",
-        medicamentos: "",
-        gestante: "Não",
-        cirurgias: "",
-        observacoes: "",
-      };
-      setAlergias(p.alergias);
-      setMedicamentos(p.medicamentos);
-      setGestante(p.gestante);
-      setCirurgias(p.cirurgias);
-      setObservacoes(p.observacoes || "");
-    }
-  }, [activeId, prontuarios]);
+// Build initial mock conversations
+function buildInitialMensagens(clientes: Cliente[]): Record<string, Mensagem[]> {
+  const now = Date.now();
+  const t = (minAgo: number) => new Date(now - minAgo * 60000).toISOString();
+  const out: Record<string, Mensagem[]> = {};
 
-  const handleSaveProntuario = () => {
-    if (!activeId) return;
-    crmStore.updateProntuario(activeId, {
-      alergias,
-      medicamentos,
-      gestante,
-      cirurgias,
-      observacoes,
-    });
-    toast.success(`Prontuário de ${active?.nome} salvo com sucesso!`);
-  };
-
-  const handleFile = async (file: File) => {
-    if (!activeId) return;
-    setUploading(true);
-    try {
-      const compressed = await imageCompression(file, {
-        maxSizeMB: 0.2,
-        maxWidthOrHeight: 1080,
-        useWebWorker: true,
-      });
-      const url = URL.createObjectURL(compressed);
-      
-      crmStore.addFoto(activeId, {
-        id: crypto.randomUUID(),
-        url,
-        size: compressed.size,
-        originalSize: file.size,
-      });
-
-      toast.success(
-        `Foto comprimida: ${(file.size / 1024).toFixed(0)}KB → ${(compressed.size / 1024).toFixed(0)}KB`,
-      );
-    } catch (e) {
-      toast.error("Falha ao processar imagem");
-      console.error(e);
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  if (!active) {
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <p className="text-muted-foreground">Nenhum paciente cadastrado no CRM</p>
-      </div>
-    );
-  }
-
-  const clientFotos = fotosGlobal[activeId] ?? [];
-
-  const renderChatPanel = (channel: "whatsapp" | "instagram") => {
-    const conversa = conversas[activeId]?.[channel] ?? [
+  for (const c of clientes) {
+    const base: Mensagem[] = [
       {
-        id: "default",
-        sender: "client",
-        text: `Olá! Esta é uma simulação de atendimento via ${channel === "whatsapp" ? "WhatsApp" : "Instagram Direct"}. Envie uma mensagem para testar.`,
-        time: "12:00",
+        id: `${c.id}-m1`,
+        cliente_id: c.id,
+        remetente: "cliente",
+        texto: "Olá! Gostaria de saber mais sobre os procedimentos da clínica.",
+        timestamp: t(45),
+      },
+      {
+        id: `${c.id}-m2`,
+        cliente_id: c.id,
+        remetente: "ia",
+        texto:
+          "Olá! Que ótimo receber você. Posso te ajudar com informações sobre botox, preenchimento, bioestimuladores e limpeza de pele. Qual desperta mais interesse?",
+        timestamp: t(44),
+      },
+      {
+        id: `${c.id}-m3`,
+        cliente_id: c.id,
+        remetente: "cliente",
+        texto: "Estou pensando em fazer preenchimento labial. Vocês têm horário essa semana?",
+        timestamp: t(20),
       },
     ];
 
-    return (
-      <div className="flex-grow flex flex-col overflow-hidden h-full">
-        {/* Messages list */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
-          <div className="flex flex-col gap-4 min-h-full justify-end">
-            {conversa.map((msg) => {
-              const isUser = msg.sender === "user";
-              const isIA = msg.sender === "ia";
-              
-              return (
-                <div
-                  key={msg.id}
-                  className={cn(
-                    "flex flex-col max-w-[70%] rounded-2xl px-4 py-2.5 text-sm shadow-sm relative animate-in fade-in-50 duration-200",
-                    isUser
-                      ? "self-end bg-primary text-primary-foreground rounded-tr-none"
-                      : isIA
-                        ? "self-start bg-champagne-soft/30 border border-primary/20 text-stone-850 rounded-tl-none"
-                        : "self-start bg-card border border-border text-stone-850 rounded-tl-none"
-                  )}
-                >
-                  {isIA && (
-                    <span className="flex items-center gap-0.5 text-[9px] uppercase tracking-wider text-primary font-bold mb-1 select-none">
-                      <Sparkles className="h-2.5 w-2.5 animate-pulse" />
-                      Agente IA
-                    </span>
-                  )}
-                  <p className="leading-relaxed whitespace-pre-wrap">{msg.text}</p>
-                  <span
-                    className={cn(
-                      "text-[9px] block text-right mt-1.5 font-medium",
-                      isUser ? "text-primary-foreground/75" : "text-muted-foreground"
-                    )}
-                  >
-                    {msg.time}
-                  </span>
-                </div>
-              );
-            })}
-            <div ref={messagesEndRef} />
-          </div>
-        </div>
+    if (c.aguardando_humano) {
+      base.push({
+        id: `${c.id}-m4`,
+        cliente_id: c.id,
+        remetente: "ia",
+        texto:
+          "Vou transferir esse atendimento para um especialista humano para te dar o melhor suporte. Um momento!",
+        timestamp: t(5),
+      });
+    } else if (!c.atendimento_ia) {
+      base.push({
+        id: `${c.id}-m4`,
+        cliente_id: c.id,
+        remetente: "humano",
+        texto: "Oi! Aqui é a Camila da clínica. Consigo encaixar você amanhã às 14h, tudo bem?",
+        timestamp: t(3),
+      });
+    } else {
+      base.push({
+        id: `${c.id}-m4`,
+        cliente_id: c.id,
+        remetente: "ia",
+        texto:
+          "Temos horários disponíveis quinta e sexta. Prefere manhã ou tarde? Assim já reservo para você.",
+        timestamp: t(2),
+      });
+    }
+    out[c.id] = base;
+  }
+  return out;
+}
 
-        {/* Input area */}
-        <div className="p-4 border-t border-border bg-card flex gap-2 items-center">
-          <Input
-            placeholder={
-              channel === "whatsapp"
-                ? "Digite sua mensagem no WhatsApp..."
-                : "Enviar direct no Instagram..."
-            }
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                handleSendMessage(channel);
-              }
-            }}
-            className="flex-1 text-xs"
-          />
-          <Button
-            size="sm"
-            onClick={() => handleSendMessage(channel)}
-            className="h-9 w-9 p-0 flex items-center justify-center shrink-0 shadow-sm"
-          >
-            <Send className="h-3.5 w-3.5" />
-          </Button>
-        </div>
-      </div>
-    );
+function AtendimentoPage() {
+  const clientes = useClientes();
+  const [mensagens, setMensagens] = useState<Record<string, Mensagem[]>>(() =>
+    buildInitialMensagens(clientes),
+  );
+
+  // Add mensagens map for any newly created cliente
+  useEffect(() => {
+    setMensagens((prev) => {
+      const next = { ...prev };
+      let changed = false;
+      for (const c of clientes) {
+        if (!next[c.id]) {
+          next[c.id] = [];
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [clientes]);
+
+  const [filter, setFilter] = useState<"todas" | "aguardando" | "ia">("todas");
+  const [activeId, setActiveId] = useState<string>(clientes[0]?.id ?? "");
+  const [inputText, setInputText] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const filteredClientes = useMemo(() => {
+    return clientes.filter((c) => {
+      const s = getStatus(c);
+      if (filter === "aguardando") return s === "aguardando_humano";
+      if (filter === "ia") return s === "ia_ativa";
+      return true;
+    });
+  }, [clientes, filter]);
+
+  const active = clientes.find((c) => c.id === activeId) ?? clientes[0];
+  const activeMsgs = active ? mensagens[active.id] ?? [] : [];
+  const activeStatus = active ? getStatus(active) : "ia_ativa";
+  const humanoAssumiu = activeStatus === "humano_assumiu";
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [activeMsgs.length, activeId]);
+
+  const handleAssumir = () => {
+    if (!active) return;
+    crmStore.updateCliente(active.id, { atendimento_ia: false, aguardando_humano: false });
+    toast.success(`Você assumiu o atendimento de ${active.nome}`);
+  };
+
+  const handleDevolver = () => {
+    if (!active) return;
+    crmStore.updateCliente(active.id, { atendimento_ia: true, aguardando_humano: false });
+    toast.success(`Atendimento devolvido para a IA`);
+  };
+
+  const handleSend = () => {
+    if (!active || !inputText.trim() || !humanoAssumiu) return;
+    const msg: Mensagem = {
+      id: crypto.randomUUID(),
+      cliente_id: active.id,
+      remetente: "humano",
+      texto: inputText.trim(),
+      timestamp: new Date().toISOString(),
+    };
+    setMensagens((prev) => ({
+      ...prev,
+      [active.id]: [...(prev[active.id] ?? []), msg],
+    }));
+    setInputText("");
   };
 
   return (
-    <div className="h-screen flex">
-      {/* Contact list */}
-      <div className="w-64 shrink-0 border-r border-border bg-card flex flex-col h-full">
-        <div className="px-5 py-6 border-b border-border">
-          <h2 className="font-display text-xl">Conversas</h2>
+    <div className="h-screen flex bg-muted/20">
+      {/* LEFT — Conversation list (40%) */}
+      <aside className="w-2/5 shrink-0 border-r border-border bg-card flex flex-col h-full">
+        <div className="px-6 py-5 border-b border-border">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-primary font-medium">
+            Supervisão IA · Humano
+          </p>
+          <h1 className="font-display text-2xl text-foreground mt-1">Central de Atendimento</h1>
+          <p className="text-xs text-muted-foreground mt-1">
+            Monitore e assuma conversas quando necessário
+          </p>
+
+          {/* Filters */}
+          <div className="mt-4 flex gap-1.5 bg-muted/40 border border-border p-1 rounded-lg">
+            {(
+              [
+                { id: "todas", label: "Todas" },
+                { id: "aguardando", label: "Aguardando Humano" },
+                { id: "ia", label: "IA Ativa" },
+              ] as const
+            ).map((f) => (
+              <button
+                key={f.id}
+                onClick={() => setFilter(f.id)}
+                className={cn(
+                  "flex-1 text-[11px] font-semibold px-2 py-1.5 rounded-md transition",
+                  filter === f.id
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
         </div>
+
         <div className="overflow-y-auto flex-1">
-          {clientes.map((c) => (
-            <button
-              key={c.id}
-              onClick={() => setActiveId(c.id)}
-              className={cn(
-                "w-full px-5 py-3.5 flex items-center gap-3 border-b border-border/60 text-left transition",
-                activeId === c.id ? "bg-champagne-soft/30 border-r-2 border-primary" : "hover:bg-muted/60",
-              )}
-            >
-              <div className="h-9 w-9 rounded-full bg-accent flex items-center justify-center text-xs font-semibold text-stone-700">
-                {c.nome.split(" ").map((n) => n[0]).slice(0, 2).join("")}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-foreground truncate">{c.nome}</p>
-                <p className="text-[11px] text-muted-foreground truncate flex items-center gap-1">
-                  {c.atendimento_ia && <Sparkles className="h-2.5 w-2.5 text-primary animate-pulse" />}
-                  {c.telefone}
-                </p>
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Chat Area (70%) */}
-      <div className="flex-1 flex flex-col bg-muted/30 min-w-0 h-full" style={{ flexBasis: "70%" }}>
-        <div className="px-8 py-5 border-b border-border bg-card flex items-center justify-between shrink-0">
-          <div>
-            <h3 className="font-display text-2xl text-foreground">{active.nome}</h3>
-            <p className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5">
-              <Phone className="h-3 w-3" /> {active.telefone}
-            </p>
-          </div>
-          {active.atendimento_ia && (
-            <span className="text-[10px] uppercase tracking-wider px-3 py-1 rounded-full bg-champagne-soft/60 text-stone-800 border border-champagne/40 flex items-center gap-1.5 font-medium">
-              <Sparkles className="h-3 w-3 text-primary" /> IA Ativa
-            </span>
+          {filteredClientes.length === 0 && (
+            <div className="p-8 text-center text-xs text-muted-foreground">
+              Nenhuma conversa neste filtro.
+            </div>
           )}
-        </div>
-
-        <Tabs defaultValue="whatsapp" className="flex-1 flex flex-col overflow-hidden m-0">
-          <div className="bg-card px-8 py-3 border-b border-border flex items-center shrink-0">
-            <TabsList className="bg-muted/40 border border-border p-1 rounded-lg h-9">
-              <TabsTrigger
-                value="whatsapp"
-                className="rounded-md px-4 py-1.5 text-xs font-semibold flex items-center gap-2 data-[state=active]:bg-emerald-500 data-[state=active]:text-white"
+          {filteredClientes.map((c) => {
+            const status = getStatus(c);
+            const meta = statusMeta[status];
+            const msgs = mensagens[c.id] ?? [];
+            const last = msgs[msgs.length - 1];
+            return (
+              <button
+                key={c.id}
+                onClick={() => setActiveId(c.id)}
+                className={cn(
+                  "w-full px-5 py-3.5 flex flex-col gap-1.5 border-b border-border/60 text-left transition",
+                  activeId === c.id
+                    ? "bg-champagne-soft/30 border-r-2 border-r-primary"
+                    : "hover:bg-muted/60",
+                )}
               >
-                <WhatsAppIcon className="h-3.5 w-3.5" />
-                <span>WhatsApp</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="instagram"
-                className="rounded-md px-4 py-1.5 text-xs font-semibold flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-rose-500 data-[state=active]:to-purple-500 data-[state=active]:text-white"
-              >
-                <Instagram className="h-3.5 w-3.5" />
-                <span>Instagram</span>
-              </TabsTrigger>
-            </TabsList>
-          </div>
-
-          <TabsContent value="whatsapp" className="flex-1 flex flex-col overflow-hidden m-0 p-0 h-full">
-            {renderChatPanel("whatsapp")}
-          </TabsContent>
-
-          <TabsContent value="instagram" className="flex-1 flex flex-col overflow-hidden m-0 p-0 h-full">
-            {renderChatPanel("instagram")}
-          </TabsContent>
-        </Tabs>
-      </div>
-
-      {/* Patient context (30%) */}
-      <div className="w-[380px] shrink-0 border-l border-border bg-card flex flex-col h-full overflow-y-auto">
-        <div className="px-6 py-6 border-b border-border flex items-center gap-2 shrink-0 bg-muted/10">
-          <HeartPulse className="h-5 w-5 text-primary" />
-          <div>
-            <p className="text-[10px] uppercase tracking-[0.2em] text-primary font-medium">Contexto do Paciente</p>
-            <h3 className="font-display text-xl text-foreground mt-0.5">Prontuário & Anamnese</h3>
-          </div>
-        </div>
-
-        {/* ANAMNESE FORM */}
-        <section className="px-6 py-5 border-b border-border space-y-4 shrink-0">
-          <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-            <User className="h-3.5 w-3.5 text-primary/75" />
-            <span>Ficha de Anamnese</span>
-          </h4>
-          
-          <div className="space-y-3.5 text-sm">
-            <div className="space-y-1.5">
-              <Label htmlFor="alergias" className="text-xs font-medium text-foreground">Alergias</Label>
-              <Input
-                id="alergias"
-                value={alergias}
-                onChange={(e) => setAlergias(e.target.value)}
-                placeholder="Ex: Dipirona, Nenhuma..."
-                className="h-8 text-xs bg-muted/10"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="medicamentos" className="text-xs font-medium text-foreground">Medicamentos em uso</Label>
-              <Input
-                id="medicamentos"
-                value={medicamentos}
-                onChange={(e) => setMedicamentos(e.target.value)}
-                placeholder="Medicamentos contínuos, ex: Puran..."
-                className="h-8 text-xs bg-muted/10"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="gestante" className="text-xs font-medium text-foreground">Gestante</Label>
-              <Select value={gestante} onValueChange={setGestante}>
-                <SelectTrigger id="gestante" className="h-8 text-xs bg-muted/10">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Sim">Sim</SelectItem>
-                  <SelectItem value="Não">Não</SelectItem>
-                  <SelectItem value="Talvez / Planejando">Talvez / Planejando</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="cirurgias" className="text-xs font-medium text-foreground">Cirurgias Prévias</Label>
-              <Input
-                id="cirurgias"
-                value={cirurgias}
-                onChange={(e) => setCirurgias(e.target.value)}
-                placeholder="Cirurgias prévias..."
-                className="h-8 text-xs bg-muted/10"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="observacoes" className="text-xs font-medium text-foreground">Observações Clínicas</Label>
-              <textarea
-                id="observacoes"
-                value={observacoes}
-                onChange={(e) => setObservacoes(e.target.value)}
-                placeholder="Detalhes da queixa, pele, recomendações..."
-                className="w-full rounded-lg border border-input bg-muted/10 px-3 py-2 text-xs min-h-[70px] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/45"
-              />
-            </div>
-
-            <Button
-              onClick={handleSaveProntuario}
-              size="sm"
-              className="w-full h-8 text-xs font-semibold shadow-sm mt-1"
-            >
-              Salvar Prontuário
-            </Button>
-          </div>
-        </section>
-
-        {/* IMAGES GALLERY */}
-        <section className="px-6 py-5 flex-1 min-h-[220px]">
-          <div className="flex items-center justify-between mb-3">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              <ImageIcon className="h-3.5 w-3.5 text-primary/75" />
-              <span>Fotos de Evolução</span>
-            </h4>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => inputRef.current?.click()}
-              disabled={uploading}
-              className="h-7 text-xs flex items-center gap-1 px-2.5 shadow-sm"
-            >
-              {uploading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
-              <span>Enviar</span>
-            </Button>
-            <input
-              ref={inputRef}
-              type="file"
-              accept="image/*"
-              hidden
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) handleFile(f);
-                e.target.value = "";
-              }}
-            />
-          </div>
-
-          {clientFotos.length === 0 ? (
-            <div className="border border-dashed border-border rounded-xl py-12 text-center bg-muted/10">
-              <ImageIcon className="h-7 w-7 text-muted-foreground mx-auto opacity-50" />
-              <p className="text-xs text-muted-foreground mt-2 font-medium">Nenhuma foto enviada</p>
-              <p className="text-[10px] text-muted-foreground/60 mt-1 max-w-[200px] mx-auto leading-normal">
-                Imagens são comprimidas para 0,2MB / 1080px
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-2">
-              {clientFotos.map((f) => (
-                <div key={f.id} className="relative aspect-square rounded-lg overflow-hidden border border-border group bg-muted flex items-center justify-center">
-                  <img src={f.url} alt="" className="w-full h-full object-cover" />
-                  
-                  <button
-                    onClick={() => {
-                      crmStore.deleteFoto(activeId, f.id);
-                      toast.success("Foto removida da galeria!");
-                    }}
-                    className="absolute top-1.5 right-1.5 p-1 rounded-md bg-black/60 hover:bg-destructive text-white opacity-0 group-hover:opacity-100 transition-all duration-200 cursor-pointer shadow-md border border-white/10"
-                    title="Excluir Foto"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
-
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent p-1.5 text-[9px] text-white opacity-0 group-hover:opacity-100 transition-all duration-200">
-                    <p className="font-mono truncate">
-                      {(f.size / 1024).toFixed(0)}KB ← {(f.originalSize / 1024).toFixed(0)}KB
-                    </p>
-                  </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-foreground truncate flex-1">
+                    {c.nome}
+                  </span>
+                  <OrigemIcon origem={c.origem} />
+                  {c.temperatura && (
+                    <span className="text-xs" title={c.temperatura}>
+                      {temperaturaEmoji[c.temperatura]}
+                    </span>
+                  )}
                 </div>
-              ))}
+
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {c.setor && (
+                    <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-primary/10 text-primary font-semibold">
+                      {c.setor}
+                    </span>
+                  )}
+                  <span className={cn("flex items-center gap-1 text-[10px] font-medium", meta.text)}>
+                    <span className={cn("h-1.5 w-1.5 rounded-full", meta.dot)} />
+                    {meta.label}
+                  </span>
+                </div>
+
+                {last && (
+                  <div className="flex items-center justify-between gap-2 mt-0.5">
+                    <p className="text-[11px] text-muted-foreground truncate flex-1">
+                      {last.remetente === "humano" && "Você: "}
+                      {last.remetente === "ia" && "IA: "}
+                      {last.texto}
+                    </p>
+                    <span className="text-[9px] text-muted-foreground/70 shrink-0">
+                      {timeAgo(last.timestamp)}
+                    </span>
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </aside>
+
+      {/* RIGHT — Chat panel (60%) */}
+      <section className="flex-1 flex flex-col h-full min-w-0">
+        {!active ? (
+          <div className="flex-1 flex items-center justify-center">
+            <p className="text-muted-foreground text-sm">Selecione uma conversa</p>
+          </div>
+        ) : (
+          <>
+            {/* Chat header */}
+            <div className="px-8 py-5 border-b border-border bg-card flex items-center justify-between shrink-0">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <h2 className="font-display text-2xl text-foreground truncate">{active.nome}</h2>
+                  {active.temperatura && (
+                    <span className="text-lg">{temperaturaEmoji[active.temperatura]}</span>
+                  )}
+                  {active.setor && (
+                    <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-primary/10 text-primary font-semibold">
+                      {active.setor}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                  <OrigemIcon origem={active.origem} className="h-3 w-3" />
+                  <span>{active.telefone}</span>
+                  <span className="mx-1">·</span>
+                  <span
+                    className={cn(
+                      "flex items-center gap-1 font-medium",
+                      statusMeta[activeStatus].text,
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "h-1.5 w-1.5 rounded-full",
+                        statusMeta[activeStatus].dot,
+                      )}
+                    />
+                    {statusMeta[activeStatus].label}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                {activeStatus !== "humano_assumiu" ? (
+                  <Button
+                    onClick={handleAssumir}
+                    size="sm"
+                    className="h-9 text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white gap-1.5"
+                  >
+                    <Hand className="h-3.5 w-3.5" />
+                    Assumir Atendimento
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleDevolver}
+                    size="sm"
+                    className="h-9 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5"
+                  >
+                    <Bot className="h-3.5 w-3.5" />
+                    Devolver para IA
+                  </Button>
+                )}
+                <Button
+                  asChild
+                  size="sm"
+                  variant="outline"
+                  className="h-9 text-xs gap-1.5"
+                >
+                  <Link to="/kanban">
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    Ver no Kanban
+                  </Link>
+                </Button>
+              </div>
             </div>
-          )}
-        </section>
-      </div>
+
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="flex flex-col gap-4 min-h-full justify-end max-w-3xl mx-auto w-full">
+                {activeMsgs.map((m) => {
+                  const isHumano = m.remetente === "humano";
+                  const isIA = m.remetente === "ia";
+                  const isCliente = m.remetente === "cliente";
+                  return (
+                    <div
+                      key={m.id}
+                      className={cn(
+                        "flex flex-col max-w-[75%] rounded-2xl px-4 py-2.5 text-sm shadow-sm animate-in fade-in-50 duration-200",
+                        isHumano &&
+                          "self-end bg-primary text-primary-foreground rounded-tr-none",
+                        isIA &&
+                          "self-start bg-muted border border-border text-foreground rounded-tl-none",
+                        isCliente &&
+                          "self-start bg-champagne-soft/40 border border-champagne/30 text-foreground rounded-tl-none",
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "flex items-center gap-1 text-[9px] uppercase tracking-wider font-bold mb-1 select-none",
+                          isHumano ? "text-primary-foreground/80" : isIA ? "text-primary" : "text-stone-600",
+                        )}
+                      >
+                        {isIA && <Sparkles className="h-2.5 w-2.5" />}
+                        {isCliente && <User className="h-2.5 w-2.5" />}
+                        {isHumano && <Headset className="h-2.5 w-2.5" />}
+                        {isIA ? "Agente IA" : isHumano ? "Você" : active.nome.split(" ")[0]}
+                      </span>
+                      <p className="leading-relaxed whitespace-pre-wrap">{m.texto}</p>
+                      <span
+                        className={cn(
+                          "text-[9px] block text-right mt-1.5 font-medium",
+                          isHumano ? "text-primary-foreground/70" : "text-muted-foreground",
+                        )}
+                      >
+                        {formatTime(m.timestamp)}
+                      </span>
+                    </div>
+                  );
+                })}
+                <div ref={messagesEndRef} />
+              </div>
+            </div>
+
+            {/* Input area */}
+            <div className="p-4 border-t border-border bg-card shrink-0">
+              {!humanoAssumiu && (
+                <div className="mb-2 text-[11px] text-center text-muted-foreground bg-muted/40 border border-border rounded-lg px-3 py-2">
+                  {activeStatus === "aguardando_humano" ? (
+                    <>
+                      🟡 A IA sugeriu transbordo. Clique em{" "}
+                      <span className="font-semibold text-foreground">"Assumir Atendimento"</span>{" "}
+                      para intervir.
+                    </>
+                  ) : (
+                    <>
+                      A IA está conversando. Clique em{" "}
+                      <span className="font-semibold text-foreground">"Assumir Atendimento"</span>{" "}
+                      para intervir.
+                    </>
+                  )}
+                </div>
+              )}
+              <div className="flex gap-2 items-center max-w-3xl mx-auto w-full">
+                <Input
+                  placeholder={
+                    humanoAssumiu ? "Digite sua mensagem..." : "Assuma o atendimento para responder"
+                  }
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleSend();
+                  }}
+                  disabled={!humanoAssumiu}
+                  className="flex-1 text-sm"
+                />
+                <Button
+                  onClick={handleSend}
+                  disabled={!humanoAssumiu || !inputText.trim()}
+                  className="h-9 w-9 p-0 flex items-center justify-center shrink-0 shadow-sm"
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
+      </section>
     </div>
   );
 }
