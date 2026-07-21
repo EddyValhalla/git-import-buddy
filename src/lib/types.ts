@@ -29,7 +29,20 @@ export interface Cliente {
   setor?: string;
   /** Origem do lead — canal de entrada */
   origem?: "whatsapp" | "instagram" | "presencial";
+  /** IA sugeriu transbordo — aguardando intervenção humana */
+  aguardando_humano?: boolean;
+  /** Temperatura do lead */
+  temperatura?: "quente" | "morno" | "frio";
 }
+
+export interface Mensagem {
+  id: string;
+  cliente_id: string;
+  remetente: "ia" | "cliente" | "humano";
+  texto: string;
+  timestamp: string;
+}
+
 
 /**
  * Novo funil simplificado com 4 estágios.

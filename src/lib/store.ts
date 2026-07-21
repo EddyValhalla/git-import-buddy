@@ -135,6 +135,10 @@ export const crmStore = {
     crmStore.notify();
     return newC;
   },
+  updateCliente: (id: string, patch: Partial<Cliente>) => {
+    clientesState = clientesState.map((c) => (c.id === id ? { ...c, ...patch } : c));
+    crmStore.notify();
+  },
 
   // Prontuario Actions
   updateProntuario: (
