@@ -33,7 +33,7 @@ export function KanbanColumn({
         <div className="min-w-0 flex-1 mr-2">
           <div className="flex items-center gap-1.5">
             <h3 className="text-sm font-semibold text-foreground truncate">{label}</h3>
-            {id === "novo_lead" && onAddCard && (
+            {id === "novos_clientes" && onAddCard && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
