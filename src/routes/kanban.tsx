@@ -292,6 +292,7 @@ function KanbanBoard() {
       client.nome = editLeadNome;
       client.telefone = editLeadTelefone;
       client.origem = editLeadOrigem;
+      client.temperatura = editLeadTemperatura === "NENHUMA" ? undefined : editLeadTemperatura;
       crmStore.notify();
     }
 
