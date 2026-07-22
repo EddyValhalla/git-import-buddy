@@ -19,7 +19,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useProcedimentos, useFuncionarios, useClientes } from "@/lib/store";
+import { checkScheduleConflict } from "@/lib/scheduleConflict";
+import { toast } from "sonner";
 import type { Agendamento, StatusAgenda } from "@/lib/types";
+
 
 interface AgendarModalProps {
   open: boolean;
