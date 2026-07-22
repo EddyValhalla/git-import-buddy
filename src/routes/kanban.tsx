@@ -267,6 +267,7 @@ function KanbanBoard() {
     setEditLeadDuracao(card.duracao_minutos ?? 45);
     setEditLeadStatus(card.status_kanban);
     setEditLeadOrigem(client?.origem ?? "whatsapp");
+    setEditLeadTemperatura(client?.temperatura ?? "NENHUMA");
   };
 
   const handleSaveEditLead = () => {
