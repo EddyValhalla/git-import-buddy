@@ -3,9 +3,11 @@ import { useMemo, useState } from "react";
 import { ProtectedLayout } from "@/components/layout/ProtectedLayout";
 import { useAgendamentos, useFuncionarios, useProcedimentos, crmStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
-import { ChevronLeft, ChevronRight, CalendarDays, Plus, Trash2, Edit3, Clock } from "lucide-react";
+import { ChevronLeft, ChevronRight, CalendarDays, Plus, Trash2, Edit3, Clock, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { StatusAgenda, StatusKanban } from "@/lib/types";
+import { checkScheduleConflict } from "@/lib/scheduleConflict";
+
 import {
   Dialog,
   DialogContent,
@@ -140,12 +142,22 @@ function AgendaPage() {
     }
 
     const proc = procedimentos.find(p => p.id === newProcId);
-    const func = funcionarios.find(f => f.id === newFuncId);
 
     // Parse start date & time
     const startStr = `${newDate}T${newTime}:00`;
     const start = new Date(startStr);
     const end = new Date(start.getTime() + newDuration * 60000);
+
+    // Verifica conflito de horário
+    const conflict = checkScheduleConflict({
+      funcionario_id: newFuncId || undefined,
+      data_hora_inicio: start.toISOString(),
+      data_hora_fim: end.toISOString(),
+    });
+    if (conflict.hasConflict) {
+      toast.error(conflict.message!);
+      return;
+    }
 
     // 1. Create client
     const newClient = crmStore.addCliente({
@@ -171,6 +183,7 @@ function AgendaPage() {
     setIsNewOpen(false);
     toast.success("Agendamento criado com sucesso!");
   };
+
 
   // Open edit appointment modal
   const handleOpenEdit = (a: any) => {
@@ -211,6 +224,19 @@ function AgendaPage() {
     const startStr = `${editDate}T${editTime}:00`;
     const start = new Date(startStr);
     const end = new Date(start.getTime() + editDuration * 60000);
+
+    // Verifica conflito de horário (ignorando o próprio agendamento em edição)
+    const conflict = checkScheduleConflict({
+      funcionario_id: editFuncId || undefined,
+      data_hora_inicio: start.toISOString(),
+      data_hora_fim: end.toISOString(),
+      ignoreId: selectedAgendamento.id,
+    });
+    if (conflict.hasConflict) {
+      toast.error(conflict.message!);
+      return;
+    }
+
 
     // Update appointment
     crmStore.updateAgendamento(selectedAgendamento.id, {
@@ -364,9 +390,11 @@ function AgendaPage() {
                           </p>
                         </div>
                         <div className="flex items-center justify-between text-[9px] opacity-60 font-mono mt-1">
-                          <span className="uppercase tracking-wider font-semibold">
+                          <span className="uppercase tracking-wider font-semibold flex items-center gap-1">
+                            <Lock className="h-2.5 w-2.5" />
                             {STATUS_LABEL[status]}
                           </span>
+
                           <span>
                             {String(start.getHours()).padStart(2, "0")}:
                             {String(start.getMinutes()).padStart(2, "0")}
