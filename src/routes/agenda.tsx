@@ -142,12 +142,22 @@ function AgendaPage() {
     }
 
     const proc = procedimentos.find(p => p.id === newProcId);
-    const func = funcionarios.find(f => f.id === newFuncId);
 
     // Parse start date & time
     const startStr = `${newDate}T${newTime}:00`;
     const start = new Date(startStr);
     const end = new Date(start.getTime() + newDuration * 60000);
+
+    // Verifica conflito de horário
+    const conflict = checkScheduleConflict({
+      funcionario_id: newFuncId || undefined,
+      data_hora_inicio: start.toISOString(),
+      data_hora_fim: end.toISOString(),
+    });
+    if (conflict.hasConflict) {
+      toast.error(conflict.message!);
+      return;
+    }
 
     // 1. Create client
     const newClient = crmStore.addCliente({
@@ -173,6 +183,7 @@ function AgendaPage() {
     setIsNewOpen(false);
     toast.success("Agendamento criado com sucesso!");
   };
+
 
   // Open edit appointment modal
   const handleOpenEdit = (a: any) => {
