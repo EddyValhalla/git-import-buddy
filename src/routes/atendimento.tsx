@@ -64,7 +64,7 @@ const statusMeta: Record<ConvStatus, { label: string; dot: string; text: string 
   aguardando_humano: { label: "Aguardando humano", dot: "bg-amber-500", text: "text-amber-700" },
 };
 
-const temperaturaEmoji = { quente: "🔥", morno: "🌡️", frio: "🧊" } as const;
+const temperaturaEmoji = { QUENTE: "🔥", MORNO: "🌡️", FRIO: "🧊" } as const;
 
 function OrigemIcon({ origem, className }: { origem?: Cliente["origem"]; className?: string }) {
   if (origem === "whatsapp")

@@ -31,6 +31,9 @@ export function KanbanCard({
   const clientes = useClientes();
   const cliente = clientes.find((c) => c.id === card.cliente_id);
   const origem = cliente?.origem;
+  const temperatura = cliente?.temperatura;
+  const setor = cliente?.setor;
+  const setorInfo = setorBadge(setor);
 
   // When dragging, we do not translate the original card, since DragOverlay will float
   const style = transform && !isDragging
@@ -51,6 +54,15 @@ export function KanbanCard({
       <div className="flex items-start justify-between gap-2">
         <p className="text-sm font-medium text-foreground leading-tight pr-6">{card.cliente_nome}</p>
         <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
+          {temperatura === "QUENTE" && (
+            <span className="animate-pulse text-red-500" title="Temperatura: QUENTE">🔥</span>
+          )}
+          {temperatura === "MORNO" && (
+            <span className="text-amber-500" title="Temperatura: MORNO">🌡️</span>
+          )}
+          {temperatura === "FRIO" && (
+            <span className="text-sky-400" title="Temperatura: FRIO">🧊</span>
+          )}
           {origem === "whatsapp" && (
             <span className="p-1 rounded bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400" title="Origem: WhatsApp">
               <MessageSquare className="h-3 w-3" />
@@ -73,8 +85,13 @@ export function KanbanCard({
           )}
         </div>
       </div>
+      {setorInfo && (
+        <span className={cn("text-[10px] px-1.5 py-0.5 rounded-full font-medium", setorInfo.className)}>
+          {setorInfo.label}
+        </span>
+      )}
       <p className="text-xs text-muted-foreground mt-1.5">{card.procedimento_nome}</p>
-      
+
       <div className="mt-3 pt-3 border-t border-border/60 flex items-center justify-between text-[11px] text-muted-foreground">
         <span className="flex items-center gap-1">
           <Clock className="h-3 w-3" />
