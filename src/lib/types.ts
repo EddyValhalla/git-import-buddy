@@ -32,7 +32,7 @@ export interface Cliente {
   /** IA sugeriu transbordo — aguardando intervenção humana */
   aguardando_humano?: boolean;
   /** Temperatura do lead */
-  temperatura?: "quente" | "morno" | "frio";
+  temperatura?: "QUENTE" | "MORNO" | "FRIO";
 }
 
 export interface Mensagem {
