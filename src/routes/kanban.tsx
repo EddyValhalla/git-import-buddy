@@ -89,6 +89,7 @@ function KanbanBoard() {
   const [editLeadDuracao, setEditLeadDuracao] = useState(45);
   const [editLeadStatus, setEditLeadStatus] = useState<StatusKanban>("novos_clientes");
   const [editLeadOrigem, setEditLeadOrigem] = useState<"whatsapp" | "instagram" | "presencial">("whatsapp");
+  const [editLeadTemperatura, setEditLeadTemperatura] = useState<"QUENTE" | "MORNO" | "FRIO" | "NENHUMA">("NENHUMA");
 
   const grouped = useMemo(() => {
     const acc: Record<StatusKanban, Agendamento[]> = {
