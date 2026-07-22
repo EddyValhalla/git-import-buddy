@@ -225,6 +225,19 @@ function AgendaPage() {
     const start = new Date(startStr);
     const end = new Date(start.getTime() + editDuration * 60000);
 
+    // Verifica conflito de horário (ignorando o próprio agendamento em edição)
+    const conflict = checkScheduleConflict({
+      funcionario_id: editFuncId || undefined,
+      data_hora_inicio: start.toISOString(),
+      data_hora_fim: end.toISOString(),
+      ignoreId: selectedAgendamento.id,
+    });
+    if (conflict.hasConflict) {
+      toast.error(conflict.message!);
+      return;
+    }
+
+
     // Update appointment
     crmStore.updateAgendamento(selectedAgendamento.id, {
       cliente_nome: editPacNome,
