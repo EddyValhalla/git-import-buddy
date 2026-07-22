@@ -3,9 +3,11 @@ import { useMemo, useState } from "react";
 import { ProtectedLayout } from "@/components/layout/ProtectedLayout";
 import { useAgendamentos, useFuncionarios, useProcedimentos, crmStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
-import { ChevronLeft, ChevronRight, CalendarDays, Plus, Trash2, Edit3, Clock } from "lucide-react";
+import { ChevronLeft, ChevronRight, CalendarDays, Plus, Trash2, Edit3, Clock, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { StatusAgenda, StatusKanban } from "@/lib/types";
+import { checkScheduleConflict } from "@/lib/scheduleConflict";
+
 import {
   Dialog,
   DialogContent,
