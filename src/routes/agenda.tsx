@@ -390,9 +390,11 @@ function AgendaPage() {
                           </p>
                         </div>
                         <div className="flex items-center justify-between text-[9px] opacity-60 font-mono mt-1">
-                          <span className="uppercase tracking-wider font-semibold">
+                          <span className="uppercase tracking-wider font-semibold flex items-center gap-1">
+                            <Lock className="h-2.5 w-2.5" />
                             {STATUS_LABEL[status]}
                           </span>
+
                           <span>
                             {String(start.getHours()).padStart(2, "0")}:
                             {String(start.getMinutes()).padStart(2, "0")}
