@@ -543,6 +543,25 @@ function KanbanBoard() {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="editLeadTemperatura">Temperatura do Lead</Label>
+              <Select
+                value={editLeadTemperatura}
+                onValueChange={(val) => setEditLeadTemperatura(val as any)}
+              >
+                <SelectTrigger id="editLeadTemperatura">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="NENHUMA">Sem classificação</SelectItem>
+                  <SelectItem value="QUENTE">🔥 Quente</SelectItem>
+                  <SelectItem value="MORNO">🌡️ Morno</SelectItem>
+                  <SelectItem value="FRIO">🧊 Frio</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+
+            <div className="space-y-2">
               <Label htmlFor="editLeadProcedimento">Procedimento</Label>
               <Select
                 value={editLeadProcedimentoId}
