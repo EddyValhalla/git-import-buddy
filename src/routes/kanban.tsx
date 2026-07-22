@@ -89,6 +89,7 @@ function KanbanBoard() {
   const [editLeadDuracao, setEditLeadDuracao] = useState(45);
   const [editLeadStatus, setEditLeadStatus] = useState<StatusKanban>("novos_clientes");
   const [editLeadOrigem, setEditLeadOrigem] = useState<"whatsapp" | "instagram" | "presencial">("whatsapp");
+  const [editLeadTemperatura, setEditLeadTemperatura] = useState<"QUENTE" | "MORNO" | "FRIO" | "NENHUMA">("NENHUMA");
 
   const grouped = useMemo(() => {
     const acc: Record<StatusKanban, Agendamento[]> = {
@@ -266,6 +267,7 @@ function KanbanBoard() {
     setEditLeadDuracao(card.duracao_minutos ?? 45);
     setEditLeadStatus(card.status_kanban);
     setEditLeadOrigem(client?.origem ?? "whatsapp");
+    setEditLeadTemperatura(client?.temperatura ?? "NENHUMA");
   };
 
   const handleSaveEditLead = () => {
@@ -290,6 +292,7 @@ function KanbanBoard() {
       client.nome = editLeadNome;
       client.telefone = editLeadTelefone;
       client.origem = editLeadOrigem;
+      client.temperatura = editLeadTemperatura === "NENHUMA" ? undefined : editLeadTemperatura;
       crmStore.notify();
     }
 
@@ -538,6 +541,25 @@ function KanbanBoard() {
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="editLeadTemperatura">Temperatura do Lead</Label>
+              <Select
+                value={editLeadTemperatura}
+                onValueChange={(val) => setEditLeadTemperatura(val as any)}
+              >
+                <SelectTrigger id="editLeadTemperatura">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="NENHUMA">Sem classificação</SelectItem>
+                  <SelectItem value="QUENTE">🔥 Quente</SelectItem>
+                  <SelectItem value="MORNO">🌡️ Morno</SelectItem>
+                  <SelectItem value="FRIO">🧊 Frio</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
 
             <div className="space-y-2">
               <Label htmlFor="editLeadProcedimento">Procedimento</Label>
