@@ -82,6 +82,18 @@ export function AgendarModal({ open, card, onSave, onCancel }: AgendarModalProps
     const start = new Date(startStr);
     const end = new Date(start.getTime() + duracao * 60000);
 
+    // Verifica conflito antes de salvar; se houver, mantém o modal aberto
+    const conflict = checkScheduleConflict({
+      funcionario_id: funcId || undefined,
+      data_hora_inicio: start.toISOString(),
+      data_hora_fim: end.toISOString(),
+      ignoreId: card?.id,
+    });
+    if (conflict.hasConflict) {
+      toast.error(conflict.message!);
+      return;
+    }
+
     onSave({
       data_hora_inicio: start.toISOString(),
       data_hora_fim: end.toISOString(),
@@ -89,6 +101,7 @@ export function AgendarModal({ open, card, onSave, onCancel }: AgendarModalProps
       status_agenda: status,
     });
   };
+
 
   const canSave = Boolean(date && time && nome.trim());
 
