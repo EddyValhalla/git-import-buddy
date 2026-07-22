@@ -4,6 +4,19 @@ import type { Agendamento } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useClientes } from "@/lib/store";
 
+function setorBadge(setor?: string) {
+  switch (setor) {
+    case "AGENDAMENTO_CONSULTAS":
+      return { label: "Agendamento", className: "bg-blue-100 text-blue-800" };
+    case "DUVIDAS_TECNICAS":
+      return { label: "Dúvida Técnica", className: "bg-orange-100 text-orange-800" };
+    case "FINANCEIRO_PAGAMENTOS":
+      return { label: "Financeiro", className: "bg-green-100 text-green-800" };
+    default:
+      return null;
+  }
+}
+
 export function KanbanCard({
   card,
   onEdit,
