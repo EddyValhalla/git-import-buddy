@@ -364,22 +364,102 @@ function AgendaPage() {
                 {hours.map((h) => (
                   <div key={h} className="h-20 border-b border-border/60" />
                 ))}
-                {agendamentos
-                  .filter((a) => a.data_hora_inicio && sameDay(new Date(a.data_hora_inicio), d))
-                  .map((a) => {
-                    const start = new Date(a.data_hora_inicio!);
-                    const top = (start.getHours() - 8) * 80 + (start.getMinutes() / 60) * 80;
-                    const height = ((a.duracao_minutos ?? 30) / 60) * 80;
+                {(() => {
+                  // Agendamentos do dia, ordenados por início
+                  const dayItems = agendamentos
+                    .filter((a) => a.data_hora_inicio && sameDay(new Date(a.data_hora_inicio), d))
+                    .map((a) => {
+                      const start = new Date(a.data_hora_inicio!);
+                      const end = new Date(
+                        a.data_hora_fim ??
+                          new Date(start.getTime() + (a.duracao_minutos ?? 30) * 60000).toISOString()
+                      );
+                      return { a, start, end };
+                    })
+                    .sort((x, y) => x.start.getTime() - y.start.getTime());
+
+                  // Agrupa itens que se sobrepõem (transitivo) e atribui coluna
+                  type Layout = {
+                    a: typeof dayItems[number]["a"];
+                    start: Date;
+                    col: number;
+                    cols: number;
+                    top: number;
+                    height: number;
+                  };
+                  const layouts: Layout[] = [];
+                  let cluster: typeof dayItems = [];
+                  let clusterEnd = 0;
+
+                  const flush = () => {
+                    if (!cluster.length) return;
+                    // Atribuição gulosa de colunas
+                    const colEnds: number[] = [];
+                    const assigned: number[] = [];
+                    cluster.forEach((it) => {
+                      let placed = -1;
+                      for (let i = 0; i < colEnds.length; i++) {
+                        if (colEnds[i] <= it.start.getTime()) {
+                          placed = i;
+                          break;
+                        }
+                      }
+                      if (placed === -1) {
+                        placed = colEnds.length;
+                        colEnds.push(it.end.getTime());
+                      } else {
+                        colEnds[placed] = it.end.getTime();
+                      }
+                      assigned.push(placed);
+                    });
+                    const cols = colEnds.length;
+                    cluster.forEach((it, idx) => {
+                      const top =
+                        (it.start.getHours() - 8) * 80 + (it.start.getMinutes() / 60) * 80;
+                      const height = ((it.a.duracao_minutos ?? 30) / 60) * 80;
+                      layouts.push({
+                        a: it.a,
+                        start: it.start,
+                        col: assigned[idx],
+                        cols,
+                        top,
+                        height,
+                      });
+                    });
+                    cluster = [];
+                    clusterEnd = 0;
+                  };
+
+                  dayItems.forEach((it) => {
+                    if (!cluster.length || it.start.getTime() < clusterEnd) {
+                      cluster.push(it);
+                      clusterEnd = Math.max(clusterEnd, it.end.getTime());
+                    } else {
+                      flush();
+                      cluster.push(it);
+                      clusterEnd = it.end.getTime();
+                    }
+                  });
+                  flush();
+
+                  return layouts.map(({ a, start, col, cols, top, height }) => {
                     const status = a.status_agenda ?? "pendente";
+                    const widthPct = 100 / cols;
+                    const leftPct = widthPct * col;
                     return (
                       <div
                         key={a.id}
                         onClick={() => handleOpenEdit(a)}
                         className={cn(
-                          "absolute left-1 right-1 rounded-xl border p-2 text-[11px] shadow-sm select-none transition flex flex-col justify-between overflow-hidden",
+                          "absolute rounded-xl border p-2 text-[11px] shadow-sm select-none transition flex flex-col justify-between overflow-hidden",
                           STATUS_STYLES[status]
                         )}
-                        style={{ top: `${top}px`, height: `${height}px` }}
+                        style={{
+                          top: `${top}px`,
+                          height: `${height}px`,
+                          left: `calc(${leftPct}% + 2px)`,
+                          width: `calc(${widthPct}% - 4px)`,
+                        }}
                       >
                         <div>
                           <p className="font-semibold truncate text-[12px] leading-tight mb-0.5">
@@ -402,7 +482,8 @@ function AgendaPage() {
                         </div>
                       </div>
                     );
-                  })}
+                  });
+                })()}
               </div>
             ))}
           </div>
