@@ -17,7 +17,7 @@ export function ProtectedLayout({
   useEffect(() => {
     if (loading) return;
     if (!user) {
-      navigate({ to: "/login" });
+      navigate({ to: "/auth" });
       return;
     }
     if (requireRole && !requireRole.includes(user.role)) {

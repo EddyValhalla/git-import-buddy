@@ -89,9 +89,9 @@ export function AppShell({ children }: { children: ReactNode }) {
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{user?.role}</p>
             </div>
             <button
-              onClick={() => {
-                logout();
-                navigate({ to: "/login" });
+              onClick={async () => {
+                await logout();
+                navigate({ to: "/auth", replace: true });
               }}
               className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-sidebar-accent transition"
               title="Sair"

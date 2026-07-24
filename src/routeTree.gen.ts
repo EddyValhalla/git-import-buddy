@@ -9,19 +9,14 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as LoginRouteImport } from './routes/login'
 import { Route as KanbanRouteImport } from './routes/kanban'
 import { Route as FinanceiroRouteImport } from './routes/financeiro'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AtendimentoRouteImport } from './routes/atendimento'
 import { Route as AgendaRouteImport } from './routes/agenda'
 import { Route as IndexRouteImport } from './routes/index'
 
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const KanbanRoute = KanbanRouteImport.update({
   id: '/kanban',
   path: '/kanban',
@@ -35,6 +30,11 @@ const FinanceiroRoute = FinanceiroRouteImport.update({
 const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
   id: '/configuracoes',
   path: '/configuracoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AtendimentoRoute = AtendimentoRouteImport.update({
@@ -57,29 +57,29 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/agenda': typeof AgendaRoute
   '/atendimento': typeof AtendimentoRoute
+  '/auth': typeof AuthRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/financeiro': typeof FinanceiroRoute
   '/kanban': typeof KanbanRoute
-  '/login': typeof LoginRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/agenda': typeof AgendaRoute
   '/atendimento': typeof AtendimentoRoute
+  '/auth': typeof AuthRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/financeiro': typeof FinanceiroRoute
   '/kanban': typeof KanbanRoute
-  '/login': typeof LoginRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/agenda': typeof AgendaRoute
   '/atendimento': typeof AtendimentoRoute
+  '/auth': typeof AuthRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/financeiro': typeof FinanceiroRoute
   '/kanban': typeof KanbanRoute
-  '/login': typeof LoginRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -87,49 +87,42 @@ export interface FileRouteTypes {
     | '/'
     | '/agenda'
     | '/atendimento'
+    | '/auth'
     | '/configuracoes'
     | '/financeiro'
     | '/kanban'
-    | '/login'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/agenda'
     | '/atendimento'
+    | '/auth'
     | '/configuracoes'
     | '/financeiro'
     | '/kanban'
-    | '/login'
   id:
     | '__root__'
     | '/'
     | '/agenda'
     | '/atendimento'
+    | '/auth'
     | '/configuracoes'
     | '/financeiro'
     | '/kanban'
-    | '/login'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AgendaRoute: typeof AgendaRoute
   AtendimentoRoute: typeof AtendimentoRoute
+  AuthRoute: typeof AuthRoute
   ConfiguracoesRoute: typeof ConfiguracoesRoute
   FinanceiroRoute: typeof FinanceiroRoute
   KanbanRoute: typeof KanbanRoute
-  LoginRoute: typeof LoginRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/kanban': {
       id: '/kanban'
       path: '/kanban'
@@ -149,6 +142,13 @@ declare module '@tanstack/react-router' {
       path: '/configuracoes'
       fullPath: '/configuracoes'
       preLoaderRoute: typeof ConfiguracoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/atendimento': {
@@ -179,21 +179,11 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AgendaRoute: AgendaRoute,
   AtendimentoRoute: AtendimentoRoute,
+  AuthRoute: AuthRoute,
   ConfiguracoesRoute: ConfiguracoesRoute,
   FinanceiroRoute: FinanceiroRoute,
   KanbanRoute: KanbanRoute,
-  LoginRoute: LoginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
