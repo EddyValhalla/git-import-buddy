@@ -1,52 +1,23 @@
-## Objetivo
-Adicionar autenticação email/senha ao app, com tabela de perfis, papéis (roles) e proteção de todas as rotas (exceto `/auth`).
+## Decisão
 
-## Passos
+Manter o fluxo de autenticação existente: **o primeiro cadastro em `/auth` torna-se administrador automaticamente**. Nenhuma alteração de código ou migration é necessária.
 
-### 1. Ativar Lovable Cloud
-Provisiona o backend (Supabase gerenciado). Sem esse passo, não há como criar tabelas nem autenticar.
+## Fluxo recomendado ao usuário
 
-### 2. Migration inicial (schema)
-- `profiles` (id → auth.users, nome, avatar_url, created_at, updated_at) com RLS: cada usuário lê/edita o próprio perfil.
-- Enum `app_role` (`admin`, `atendente`, `user`).
-- `user_roles` (user_id, role, unique) com RLS e função `has_role(_user_id, _role)` SECURITY DEFINER para evitar recursão.
-- Trigger `on_auth_user_created` → cria linha em `profiles` automaticamente no signup e atribui papel `user` por padrão.
-- GRANTs corretos para `authenticated` e `service_role`.
+1. Acessar `/auth`.
+2. Clicar em **Criar conta**.
+3. Informar nome, e-mail e senha (mínimo 6 caracteres).
+4. O trigger `on_auth_user_created` cria o perfil, atribui a role `admin` e direciona para `/`.
+5. A partir daí, o admin pode criar outros usuários/atendentes via interface de configurações quando existir.
 
-### 3. Estrutura de rotas
-Mover todas as rotas atuais (`/agenda`, `/atendimento`, `/kanban`, `/clientes`, etc. e a home `/`) para dentro de `src/routes/_authenticated/`, que é a pathless layout gerenciada pela integração Supabase (redireciona para `/auth` se não autenticado).
+## Observações de segurança
 
-- `src/routes/index.tsx` é removido (a home `/` passa a ficar em `src/routes/_authenticated/index.tsx`).
-- `src/routes/auth.tsx` público: formulário com abas **Entrar** e **Criar conta** (email + senha), usando o design system existente (paleta dourada/creme do app).
+- Não há credencial pré-definida de fábrica.
+- Qualquer pessoa que acessar a rota `/auth` antes do primeiro cadastro pode se tornar admin. Isso é aceitável enquanto o app estiver em ambiente interno/preview; em produção pública, recomenda-se criar um seed de admin padrão ou desabilitar auto-cadastro após o primeiro usuário.
+- Nenhuma migration, schema, RLS ou componente precisa ser modificado.
 
-### 4. Cliente Supabase e integração
-A integração já cria automaticamente:
-- `src/integrations/supabase/client.ts` (browser)
-- `src/routes/_authenticated/route.tsx` (gate `ssr:false` → redirect `/auth`)
-- Middleware bearer em `src/start.ts`
+## O que não será feito
 
-### 5. UI: header/logout
-Adicionar no layout principal (ou onde já existe a navbar) um indicador do usuário logado + botão **Sair** que:
-1. `queryClient.cancelQueries()` + `clear()`
-2. `supabase.auth.signOut()`
-3. `navigate({ to: '/auth', replace: true })`
-
-### 6. Auth state listener
-Em `src/routes/__root.tsx`, registrar `onAuthStateChange` filtrado (`SIGNED_IN`/`SIGNED_OUT`/`USER_UPDATED`) que chama `router.invalidate()`.
-
-### 7. Página `/auth`
-- Aba "Entrar": `signInWithPassword`
-- Aba "Criar conta": `signUp` com `emailRedirectTo: window.location.origin`
-- Se já autenticado, redirecionar para `/`
-- Mensagens de erro amigáveis em PT-BR
-
-## Observações técnicas
-- Papéis ficam em `user_roles` (nunca em `profiles`) por segurança.
-- `has_role()` SECURITY DEFINER evita recursão em RLS.
-- Confirmação de email fica **desabilitada** por padrão para facilitar testes; pode ser reativada depois nas configs de Auth.
-- Nenhuma lógica de negócio (kanban, agenda, atendimento) é alterada — só o wrapper de autenticação.
-
-## O que NÃO faz parte deste plano
-- Login social (Google/Apple) — não solicitado
-- Reset de senha — pode ser adicionado depois
-- Vincular clientes/leads a `user_id` (multi-tenant) — o mockData continua compartilhado por enquanto
+- Criar usuário admin padrão via seed.
+- Alterar o `on_auth_user_created` trigger.
+- Modificar a página `/auth` ou o `AuthContext`.
