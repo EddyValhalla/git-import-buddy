@@ -14,6 +14,299 @@ export type Database = {
   }
   public: {
     Tables: {
+      agendamentos: {
+        Row: {
+          agendado_por_ia: boolean | null
+          cliente_id: string | null
+          cliente_nome: string | null
+          created_at: string | null
+          data_hora_fim: string | null
+          data_hora_inicio: string
+          data_retorno: string | null
+          duracao_minutos: number | null
+          funcionario_id: string | null
+          id: string
+          procedimento_id: string | null
+          procedimento_nome: string | null
+          status_agenda: string | null
+          status_kanban: string | null
+          tipo_atendimento: string | null
+        }
+        Insert: {
+          agendado_por_ia?: boolean | null
+          cliente_id?: string | null
+          cliente_nome?: string | null
+          created_at?: string | null
+          data_hora_fim?: string | null
+          data_hora_inicio: string
+          data_retorno?: string | null
+          duracao_minutos?: number | null
+          funcionario_id?: string | null
+          id?: string
+          procedimento_id?: string | null
+          procedimento_nome?: string | null
+          status_agenda?: string | null
+          status_kanban?: string | null
+          tipo_atendimento?: string | null
+        }
+        Update: {
+          agendado_por_ia?: boolean | null
+          cliente_id?: string | null
+          cliente_nome?: string | null
+          created_at?: string | null
+          data_hora_fim?: string | null
+          data_hora_inicio?: string
+          data_retorno?: string | null
+          duracao_minutos?: number | null
+          funcionario_id?: string | null
+          id?: string
+          procedimento_id?: string | null
+          procedimento_nome?: string | null
+          status_agenda?: string | null
+          status_kanban?: string | null
+          tipo_atendimento?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agendamentos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agendamentos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_aniversariantes_mes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agendamentos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_leads_frios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agendamentos_funcionario_id_fkey"
+            columns: ["funcionario_id"]
+            isOneToOne: false
+            referencedRelation: "funcionarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agendamentos_procedimento_id_fkey"
+            columns: ["procedimento_id"]
+            isOneToOne: false
+            referencedRelation: "procedimentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clientes: {
+        Row: {
+          aguardando_humano: boolean | null
+          atendimento_ia: boolean | null
+          consentimento_marketing: boolean | null
+          created_at: string | null
+          data_nascimento: string | null
+          id: string
+          nome: string
+          origem: string | null
+          setor: string | null
+          telefone: string
+          temperatura: string | null
+          ultima_interacao: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          aguardando_humano?: boolean | null
+          atendimento_ia?: boolean | null
+          consentimento_marketing?: boolean | null
+          created_at?: string | null
+          data_nascimento?: string | null
+          id?: string
+          nome: string
+          origem?: string | null
+          setor?: string | null
+          telefone: string
+          temperatura?: string | null
+          ultima_interacao?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          aguardando_humano?: boolean | null
+          atendimento_ia?: boolean | null
+          consentimento_marketing?: boolean | null
+          created_at?: string | null
+          data_nascimento?: string | null
+          id?: string
+          nome?: string
+          origem?: string | null
+          setor?: string | null
+          telefone?: string
+          temperatura?: string | null
+          ultima_interacao?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      fotos_paciente: {
+        Row: {
+          cliente_id: string | null
+          created_at: string | null
+          id: string
+          tipo: string
+          url_foto: string
+        }
+        Insert: {
+          cliente_id?: string | null
+          created_at?: string | null
+          id?: string
+          tipo: string
+          url_foto: string
+        }
+        Update: {
+          cliente_id?: string | null
+          created_at?: string | null
+          id?: string
+          tipo?: string
+          url_foto?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fotos_paciente_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fotos_paciente_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_aniversariantes_mes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fotos_paciente_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_leads_frios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      funcionarios: {
+        Row: {
+          ativo: boolean | null
+          auth_user_id: string | null
+          id: string
+          nome: string
+          procedimentos_habilitados: string[] | null
+          role: string
+          status: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          auth_user_id?: string | null
+          id?: string
+          nome: string
+          procedimentos_habilitados?: string[] | null
+          role: string
+          status?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          auth_user_id?: string | null
+          id?: string
+          nome?: string
+          procedimentos_habilitados?: string[] | null
+          role?: string
+          status?: string | null
+        }
+        Relationships: []
+      }
+      mensagens: {
+        Row: {
+          cliente_id: string | null
+          id: string
+          remetente: string
+          texto: string
+          timestamp: string | null
+        }
+        Insert: {
+          cliente_id?: string | null
+          id?: string
+          remetente: string
+          texto: string
+          timestamp?: string | null
+        }
+        Update: {
+          cliente_id?: string | null
+          id?: string
+          remetente?: string
+          texto?: string
+          timestamp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mensagens_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mensagens_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_aniversariantes_mes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mensagens_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_leads_frios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      procedimentos: {
+        Row: {
+          ativo: boolean | null
+          comissao_tipo: string | null
+          comissao_valor: number | null
+          duracao_minutos: number | null
+          id: string
+          nome: string
+          status: string | null
+          valor_sugerido: number | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          comissao_tipo?: string | null
+          comissao_valor?: number | null
+          duracao_minutos?: number | null
+          id?: string
+          nome: string
+          status?: string | null
+          valor_sugerido?: number | null
+        }
+        Update: {
+          ativo?: boolean | null
+          comissao_tipo?: string | null
+          comissao_valor?: number | null
+          duracao_minutos?: number | null
+          id?: string
+          nome?: string
+          status?: string | null
+          valor_sugerido?: number | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -38,6 +331,64 @@ export type Database = {
         }
         Relationships: []
       }
+      prontuarios: {
+        Row: {
+          alergias: string | null
+          cirurgias: string | null
+          cliente_id: string | null
+          created_at: string | null
+          gestante: boolean | null
+          id: string
+          medicamentos: string | null
+          observacoes: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          alergias?: string | null
+          cirurgias?: string | null
+          cliente_id?: string | null
+          created_at?: string | null
+          gestante?: boolean | null
+          id?: string
+          medicamentos?: string | null
+          observacoes?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          alergias?: string | null
+          cirurgias?: string | null
+          cliente_id?: string | null
+          created_at?: string | null
+          gestante?: boolean | null
+          id?: string
+          medicamentos?: string | null
+          observacoes?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prontuarios_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prontuarios_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_aniversariantes_mes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prontuarios_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_leads_frios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -61,7 +412,157 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      vw_agendamentos_hoje: {
+        Row: {
+          agendado_por_ia: boolean | null
+          cliente_id: string | null
+          cliente_nome: string | null
+          cliente_nome_real: string | null
+          created_at: string | null
+          data_hora_fim: string | null
+          data_hora_inicio: string | null
+          data_retorno: string | null
+          duracao_minutos: number | null
+          funcionario_id: string | null
+          id: string | null
+          procedimento_id: string | null
+          procedimento_nome: string | null
+          procedimento_nome_real: string | null
+          status_agenda: string | null
+          status_kanban: string | null
+          telefone: string | null
+          tipo_atendimento: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agendamentos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agendamentos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_aniversariantes_mes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agendamentos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_leads_frios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agendamentos_funcionario_id_fkey"
+            columns: ["funcionario_id"]
+            isOneToOne: false
+            referencedRelation: "funcionarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agendamentos_procedimento_id_fkey"
+            columns: ["procedimento_id"]
+            isOneToOne: false
+            referencedRelation: "procedimentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vw_aniversariantes_mes: {
+        Row: {
+          data_nascimento: string | null
+          id: string | null
+          nome: string | null
+          telefone: string | null
+        }
+        Insert: {
+          data_nascimento?: string | null
+          id?: string | null
+          nome?: string | null
+          telefone?: string | null
+        }
+        Update: {
+          data_nascimento?: string | null
+          id?: string | null
+          nome?: string | null
+          telefone?: string | null
+        }
+        Relationships: []
+      }
+      vw_leads_frios: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          nome: string | null
+          origem: string | null
+          telefone: string | null
+          ultima_interacao: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          nome?: string | null
+          origem?: string | null
+          telefone?: string | null
+          ultima_interacao?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          nome?: string | null
+          origem?: string | null
+          telefone?: string | null
+          ultima_interacao?: string | null
+        }
+        Relationships: []
+      }
+      vw_resumo_mensal: {
+        Row: {
+          cancelados: number | null
+          clientes_unicos: number | null
+          compareceram: number | null
+          mes: string | null
+          nao_compareceram: number | null
+          total_agendamentos: number | null
+        }
+        Relationships: []
+      }
+      vw_retornos_proximos: {
+        Row: {
+          cliente_id: string | null
+          cliente_nome: string | null
+          data_retorno: string | null
+          id: string | null
+          procedimento_nome: string | null
+          telefone: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agendamentos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agendamentos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_aniversariantes_mes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agendamentos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_leads_frios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       has_role: {
