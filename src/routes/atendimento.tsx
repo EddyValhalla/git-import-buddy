@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ProtectedLayout } from "@/components/layout/ProtectedLayout";
-import { useClientes, crmStore } from "@/lib/store";
+import { useClientes, useMensagens, crmStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
