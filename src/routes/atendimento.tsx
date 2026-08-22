@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ProtectedLayout } from "@/components/layout/ProtectedLayout";
-import { useClientes, crmStore } from "@/lib/store";
+import { useClientes, useMensagens, crmStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -89,90 +89,9 @@ function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 }
 
-// Build initial mock conversations
-function buildInitialMensagens(clientes: Cliente[]): Record<string, Mensagem[]> {
-  const now = Date.now();
-  const t = (minAgo: number) => new Date(now - minAgo * 60000).toISOString();
-  const out: Record<string, Mensagem[]> = {};
-
-  for (const c of clientes) {
-    const base: Mensagem[] = [
-      {
-        id: `${c.id}-m1`,
-        cliente_id: c.id,
-        remetente: "cliente",
-        texto: "Olá! Gostaria de saber mais sobre os procedimentos da clínica.",
-        timestamp: t(45),
-      },
-      {
-        id: `${c.id}-m2`,
-        cliente_id: c.id,
-        remetente: "ia",
-        texto:
-          "Olá! Que ótimo receber você. Posso te ajudar com informações sobre botox, preenchimento, bioestimuladores e limpeza de pele. Qual desperta mais interesse?",
-        timestamp: t(44),
-      },
-      {
-        id: `${c.id}-m3`,
-        cliente_id: c.id,
-        remetente: "cliente",
-        texto: "Estou pensando em fazer preenchimento labial. Vocês têm horário essa semana?",
-        timestamp: t(20),
-      },
-    ];
-
-    if (c.aguardando_humano) {
-      base.push({
-        id: `${c.id}-m4`,
-        cliente_id: c.id,
-        remetente: "ia",
-        texto:
-          "Vou transferir esse atendimento para um especialista humano para te dar o melhor suporte. Um momento!",
-        timestamp: t(5),
-      });
-    } else if (!c.atendimento_ia) {
-      base.push({
-        id: `${c.id}-m4`,
-        cliente_id: c.id,
-        remetente: "humano",
-        texto: "Oi! Aqui é a Camila da clínica. Consigo encaixar você amanhã às 14h, tudo bem?",
-        timestamp: t(3),
-      });
-    } else {
-      base.push({
-        id: `${c.id}-m4`,
-        cliente_id: c.id,
-        remetente: "ia",
-        texto:
-          "Temos horários disponíveis quinta e sexta. Prefere manhã ou tarde? Assim já reservo para você.",
-        timestamp: t(2),
-      });
-    }
-    out[c.id] = base;
-  }
-  return out;
-}
-
 function AtendimentoPage() {
   const clientes = useClientes();
-  const [mensagens, setMensagens] = useState<Record<string, Mensagem[]>>(() =>
-    buildInitialMensagens(clientes),
-  );
-
-  // Add mensagens map for any newly created cliente
-  useEffect(() => {
-    setMensagens((prev) => {
-      const next = { ...prev };
-      let changed = false;
-      for (const c of clientes) {
-        if (!next[c.id]) {
-          next[c.id] = [];
-          changed = true;
-        }
-      }
-      return changed ? next : prev;
-    });
-  }, [clientes]);
+  const mensagens = useMensagens();
 
   const [filter, setFilter] = useState<"todas" | "aguardando" | "ia">("todas");
   const [activeId, setActiveId] = useState<string>(clientes[0]?.id ?? "");
@@ -211,17 +130,12 @@ function AtendimentoPage() {
 
   const handleSend = () => {
     if (!active || !inputText.trim() || !humanoAssumiu) return;
-    const msg: Mensagem = {
-      id: crypto.randomUUID(),
+    crmStore.addMensagem({
       cliente_id: active.id,
       remetente: "humano",
       texto: inputText.trim(),
       timestamp: new Date().toISOString(),
-    };
-    setMensagens((prev) => ({
-      ...prev,
-      [active.id]: [...(prev[active.id] ?? []), msg],
-    }));
+    });
     setInputText("");
   };
 
