@@ -253,9 +253,7 @@ function AgendaPage() {
     // Also update client name and telephone
     const client = crmStore.getClientes().find(c => c.id === selectedAgendamento.cliente_id);
     if (client) {
-      client.nome = editPacNome;
-      client.telefone = editPacTel;
-      crmStore.notify();
+      crmStore.updateCliente(client.id, { nome: editPacNome, telefone: editPacTel });
     }
 
     setSelectedAgendamento(null);
