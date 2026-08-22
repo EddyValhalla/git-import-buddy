@@ -1,6 +1,7 @@
 import { useEffect, type ReactNode } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCrmSync } from "@/lib/store";
 import type { Role } from "@/lib/types";
 import { AppShell } from "./AppShell";
 
@@ -13,6 +14,7 @@ export function ProtectedLayout({
 }) {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  useCrmSync();
 
   useEffect(() => {
     if (loading) return;
