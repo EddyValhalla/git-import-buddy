@@ -14,6 +14,7 @@ export function ProtectedLayout({
 }) {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  useCrmSync();
 
   useEffect(() => {
     if (loading) return;
