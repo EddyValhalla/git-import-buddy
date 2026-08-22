@@ -130,17 +130,12 @@ function AtendimentoPage() {
 
   const handleSend = () => {
     if (!active || !inputText.trim() || !humanoAssumiu) return;
-    const msg: Mensagem = {
-      id: crypto.randomUUID(),
+    crmStore.addMensagem({
       cliente_id: active.id,
       remetente: "humano",
       texto: inputText.trim(),
       timestamp: new Date().toISOString(),
-    };
-    setMensagens((prev) => ({
-      ...prev,
-      [active.id]: [...(prev[active.id] ?? []), msg],
-    }));
+    });
     setInputText("");
   };
 
