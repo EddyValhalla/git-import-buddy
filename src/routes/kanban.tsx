@@ -289,11 +289,12 @@ function KanbanBoard() {
 
     const client = clientes.find((c) => c.id === editingLead.cliente_id);
     if (client) {
-      client.nome = editLeadNome;
-      client.telefone = editLeadTelefone;
-      client.origem = editLeadOrigem;
-      client.temperatura = editLeadTemperatura === "NENHUMA" ? undefined : editLeadTemperatura;
-      crmStore.notify();
+      crmStore.updateCliente(client.id, {
+        nome: editLeadNome,
+        telefone: editLeadTelefone,
+        origem: editLeadOrigem,
+        temperatura: editLeadTemperatura === "NENHUMA" ? undefined : editLeadTemperatura,
+      });
     }
 
     setEditingLead(null);
