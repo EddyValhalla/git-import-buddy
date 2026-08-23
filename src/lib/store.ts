@@ -20,6 +20,7 @@ let funcionariosState: Funcionario[] = [];
 let procedimentosState: Procedimento[] = [];
 let clientesState: Cliente[] = [];
 let mensagensState: Record<string, Mensagem[]> = {};
+let crossellState: CrossellRegra[] = [];
 let loadedState = false;
 
 // Prontuário / fotos remain local (no storage bucket configured yet)
