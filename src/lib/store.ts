@@ -1,6 +1,13 @@
 import { useEffect, useSyncExternalStore } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import type { Agendamento, Funcionario, Procedimento, Cliente, Mensagem } from "./types";
+import type {
+  Agendamento,
+  Funcionario,
+  Procedimento,
+  Cliente,
+  Mensagem,
+  CrossellRegra,
+} from "./types";
 
 type Listener = () => void;
 const listeners = new Set<Listener>();
