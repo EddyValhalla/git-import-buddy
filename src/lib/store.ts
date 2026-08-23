@@ -115,6 +115,7 @@ export const crmStore = {
   getProcedimentos: () => procedimentosState,
   getClientes: () => clientesState,
   getMensagens: () => mensagensState,
+  getCrossell: () => crossellState,
   getProntuarios: () => prontuariosState,
   getFotos: () => fotosState,
   getLoaded: () => loadedState,
