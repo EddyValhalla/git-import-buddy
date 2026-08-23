@@ -378,6 +378,11 @@ function ConfigPage() {
             </Table>
           </section>
         </TabsContent>
+
+        {/* TAB 3: CROSSELL */}
+        <TabsContent value="crossell" className="space-y-4">
+          <CrossellPanel />
+        </TabsContent>
       </Tabs>
 
       {/* DIALOG: NOVO/EDITAR PROFISSIONAL */}
