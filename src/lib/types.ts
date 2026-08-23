@@ -88,3 +88,14 @@ export interface FotoPaciente {
   tipo: "antes" | "depois" | "evolucao";
   created_at?: string;
 }
+
+export interface CrossellRegra {
+  id: string;
+  procedimento_origem_id: string | null;
+  procedimento_sugerido_id: string | null;
+  delay_dias: number;
+  mensagem_template: string;
+  ativo: boolean;
+  created_at?: string;
+  updated_at?: string;
+}

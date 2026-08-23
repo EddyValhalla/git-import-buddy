@@ -1,6 +1,13 @@
 import { useEffect, useSyncExternalStore } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import type { Agendamento, Funcionario, Procedimento, Cliente, Mensagem } from "./types";
+import type {
+  Agendamento,
+  Funcionario,
+  Procedimento,
+  Cliente,
+  Mensagem,
+  CrossellRegra,
+} from "./types";
 
 type Listener = () => void;
 const listeners = new Set<Listener>();
@@ -13,6 +20,7 @@ let funcionariosState: Funcionario[] = [];
 let procedimentosState: Procedimento[] = [];
 let clientesState: Cliente[] = [];
 let mensagensState: Record<string, Mensagem[]> = {};
+let crossellState: CrossellRegra[] = [];
 let loadedState = false;
 
 // Prontuário / fotos remain local (no storage bucket configured yet)
@@ -107,6 +115,7 @@ export const crmStore = {
   getProcedimentos: () => procedimentosState,
   getClientes: () => clientesState,
   getMensagens: () => mensagensState,
+  getCrossell: () => crossellState,
   getProntuarios: () => prontuariosState,
   getFotos: () => fotosState,
   getLoaded: () => loadedState,
@@ -121,24 +130,28 @@ export const crmStore = {
 
   /** Load every CRM entity from the database. */
   loadAll: async () => {
-    const [clientes, funcionarios, procedimentos, agendamentos, mensagens] = await Promise.all([
-      supabase.from("clientes").select("*").order("created_at", { ascending: true }),
-      supabase.from("funcionarios").select("*").order("nome", { ascending: true }),
-      supabase.from("procedimentos").select("*").order("nome", { ascending: true }),
-      supabase.from("agendamentos").select("*").order("data_hora_inicio", { ascending: true }),
-      supabase.from("mensagens").select("*").order("timestamp", { ascending: true }),
-    ]);
+    const [clientes, funcionarios, procedimentos, agendamentos, mensagens, crossell] =
+      await Promise.all([
+        supabase.from("clientes").select("*").order("created_at", { ascending: true }),
+        supabase.from("funcionarios").select("*").order("nome", { ascending: true }),
+        supabase.from("procedimentos").select("*").order("nome", { ascending: true }),
+        supabase.from("agendamentos").select("*").order("data_hora_inicio", { ascending: true }),
+        supabase.from("mensagens").select("*").order("timestamp", { ascending: true }),
+        supabase.from("crossell_matriz").select("*").order("created_at", { ascending: true }),
+      ]);
 
     logError("load clientes", clientes.error);
     logError("load funcionarios", funcionarios.error);
     logError("load procedimentos", procedimentos.error);
     logError("load agendamentos", agendamentos.error);
     logError("load mensagens", mensagens.error);
+    logError("load crossell", crossell.error);
 
     clientesState = (clientes.data ?? []) as unknown as Cliente[];
     funcionariosState = (funcionarios.data ?? []) as unknown as Funcionario[];
     procedimentosState = (procedimentos.data ?? []) as unknown as Procedimento[];
     agendamentosState = (agendamentos.data ?? []) as unknown as Agendamento[];
+    crossellState = (crossell.data ?? []) as unknown as CrossellRegra[];
 
     const grouped: Record<string, Mensagem[]> = {};
     for (const m of (mensagens.data ?? []) as unknown as Mensagem[]) {
@@ -324,6 +337,51 @@ export const crmStore = {
     notify();
   },
 
+  // ---------------- Crossell ----------------
+  addCrossell: (r: Omit<CrossellRegra, "id">) => {
+    const newR: CrossellRegra = { ...r, id: newId() };
+    crossellState = [...crossellState, newR];
+    notify();
+    void supabase
+      .from("crossell_matriz")
+      .insert({
+        id: newR.id,
+        procedimento_origem_id: newR.procedimento_origem_id,
+        procedimento_sugerido_id: newR.procedimento_sugerido_id,
+        delay_dias: newR.delay_dias,
+        mensagem_template: newR.mensagem_template,
+        ativo: newR.ativo,
+      } as never)
+      .then(({ error }) => logError("insert crossell", error));
+    return newR;
+  },
+  updateCrossell: (id: string, patch: Partial<CrossellRegra>) => {
+    crossellState = crossellState.map((r) => (r.id === id ? { ...r, ...patch } : r));
+    notify();
+    const payload = pick(patch, [
+      "procedimento_origem_id",
+      "procedimento_sugerido_id",
+      "delay_dias",
+      "mensagem_template",
+      "ativo",
+    ]);
+    if (Object.keys(payload).length === 0) return;
+    void supabase
+      .from("crossell_matriz")
+      .update(payload as never)
+      .eq("id", id)
+      .then(({ error }) => logError("update crossell", error));
+  },
+  deleteCrossell: (id: string) => {
+    crossellState = crossellState.filter((r) => r.id !== id);
+    notify();
+    void supabase
+      .from("crossell_matriz")
+      .delete()
+      .eq("id", id)
+      .then(({ error }) => logError("delete crossell", error));
+  },
+
   // ---------------- Prontuários (local) ----------------
   updateProntuario: (
     clienteId: string,
@@ -428,4 +486,8 @@ export function useCrmSync() {
       void supabase.removeChannel(channel);
     };
   }, []);
+}
+
+export function useCrossell(): CrossellRegra[] {
+  return useSyncExternalStore(crmStore.subscribe, crmStore.getCrossell, crmStore.getCrossell);
 }

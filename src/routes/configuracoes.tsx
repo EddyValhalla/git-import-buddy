@@ -28,6 +28,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Edit3, UserCheck, Stethoscope, Sparkles, CheckSquare, Square } from "lucide-react";
 import { toast } from "sonner";
+import { CrossellPanel } from "@/features/crossell/CrossellPanel";
 import type { Funcionario, Procedimento } from "@/lib/types";
 
 export const Route = createFileRoute("/configuracoes")({
@@ -220,6 +221,9 @@ function ConfigPage() {
           <TabsTrigger value="procedimentos" className="rounded-lg px-6 font-medium text-xs">
             Catálogo de Procedimentos
           </TabsTrigger>
+          <TabsTrigger value="crossell" className="rounded-lg px-6 font-medium text-xs">
+            Crossell
+          </TabsTrigger>
         </TabsList>
 
         {/* TAB 1: PROFISSIONAIS */}
@@ -374,6 +378,11 @@ function ConfigPage() {
               </TableBody>
             </Table>
           </section>
+        </TabsContent>
+
+        {/* TAB 3: CROSSELL */}
+        <TabsContent value="crossell" className="space-y-4">
+          <CrossellPanel />
         </TabsContent>
       </Tabs>
 

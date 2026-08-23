@@ -152,6 +152,54 @@ export type Database = {
         }
         Relationships: []
       }
+      crossell_matriz: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          delay_dias: number
+          id: string
+          mensagem_template: string
+          procedimento_origem_id: string | null
+          procedimento_sugerido_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          delay_dias?: number
+          id?: string
+          mensagem_template: string
+          procedimento_origem_id?: string | null
+          procedimento_sugerido_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          delay_dias?: number
+          id?: string
+          mensagem_template?: string
+          procedimento_origem_id?: string | null
+          procedimento_sugerido_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crossell_matriz_procedimento_origem_id_fkey"
+            columns: ["procedimento_origem_id"]
+            isOneToOne: false
+            referencedRelation: "procedimentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crossell_matriz_procedimento_sugerido_id_fkey"
+            columns: ["procedimento_sugerido_id"]
+            isOneToOne: false
+            referencedRelation: "procedimentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fotos_paciente: {
         Row: {
           cliente_id: string | null
