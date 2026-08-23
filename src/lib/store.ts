@@ -337,6 +337,51 @@ export const crmStore = {
     notify();
   },
 
+  // ---------------- Crossell ----------------
+  addCrossell: (r: Omit<CrossellRegra, "id">) => {
+    const newR: CrossellRegra = { ...r, id: newId() };
+    crossellState = [...crossellState, newR];
+    notify();
+    void supabase
+      .from("crossell_matriz")
+      .insert({
+        id: newR.id,
+        procedimento_origem_id: newR.procedimento_origem_id,
+        procedimento_sugerido_id: newR.procedimento_sugerido_id,
+        delay_dias: newR.delay_dias,
+        mensagem_template: newR.mensagem_template,
+        ativo: newR.ativo,
+      } as never)
+      .then(({ error }) => logError("insert crossell", error));
+    return newR;
+  },
+  updateCrossell: (id: string, patch: Partial<CrossellRegra>) => {
+    crossellState = crossellState.map((r) => (r.id === id ? { ...r, ...patch } : r));
+    notify();
+    const payload = pick(patch, [
+      "procedimento_origem_id",
+      "procedimento_sugerido_id",
+      "delay_dias",
+      "mensagem_template",
+      "ativo",
+    ]);
+    if (Object.keys(payload).length === 0) return;
+    void supabase
+      .from("crossell_matriz")
+      .update(payload as never)
+      .eq("id", id)
+      .then(({ error }) => logError("update crossell", error));
+  },
+  deleteCrossell: (id: string) => {
+    crossellState = crossellState.filter((r) => r.id !== id);
+    notify();
+    void supabase
+      .from("crossell_matriz")
+      .delete()
+      .eq("id", id)
+      .then(({ error }) => logError("delete crossell", error));
+  },
+
   // ---------------- Prontuários (local) ----------------
   updateProntuario: (
     clienteId: string,
