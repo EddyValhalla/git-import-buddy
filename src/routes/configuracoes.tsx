@@ -28,6 +28,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Edit3, UserCheck, Stethoscope, Sparkles, CheckSquare, Square } from "lucide-react";
 import { toast } from "sonner";
+import { CrossellPanel } from "@/features/crossell/CrossellPanel";
 import type { Funcionario, Procedimento } from "@/lib/types";
 
 export const Route = createFileRoute("/configuracoes")({
