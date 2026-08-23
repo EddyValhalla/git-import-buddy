@@ -9,37 +9,21 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as KanbanRouteImport } from './routes/kanban'
-import { Route as FinanceiroRouteImport } from './routes/financeiro'
-import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AtendimentoRouteImport } from './routes/atendimento'
-import { Route as AgendaRouteImport } from './routes/agenda'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AgendaRouteImport } from './routes/agenda'
+import { Route as AtendimentoRouteImport } from './routes/atendimento'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as CampanhasRouteImport } from './routes/campanhas'
+import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
+import { Route as DiagnosticosRouteImport } from './routes/diagnosticos'
+import { Route as FinanceiroRouteImport } from './routes/financeiro'
+import { Route as FluxosAutomacaoRouteImport } from './routes/fluxos-automacao'
+import { Route as KanbanRouteImport } from './routes/kanban'
+import { Route as SegmentacaoRfmRouteImport } from './routes/segmentacao-rfm'
 
-const KanbanRoute = KanbanRouteImport.update({
-  id: '/kanban',
-  path: '/kanban',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FinanceiroRoute = FinanceiroRouteImport.update({
-  id: '/financeiro',
-  path: '/financeiro',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
-  id: '/configuracoes',
-  path: '/configuracoes',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AtendimentoRoute = AtendimentoRouteImport.update({
-  id: '/atendimento',
-  path: '/atendimento',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AgendaRoute = AgendaRouteImport.update({
@@ -47,9 +31,49 @@ const AgendaRoute = AgendaRouteImport.update({
   path: '/agenda',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AtendimentoRoute = AtendimentoRouteImport.update({
+  id: '/atendimento',
+  path: '/atendimento',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CampanhasRoute = CampanhasRouteImport.update({
+  id: '/campanhas',
+  path: '/campanhas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
+  id: '/configuracoes',
+  path: '/configuracoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DiagnosticosRoute = DiagnosticosRouteImport.update({
+  id: '/diagnosticos',
+  path: '/diagnosticos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FinanceiroRoute = FinanceiroRouteImport.update({
+  id: '/financeiro',
+  path: '/financeiro',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FluxosAutomacaoRoute = FluxosAutomacaoRouteImport.update({
+  id: '/fluxos-automacao',
+  path: '/fluxos-automacao',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KanbanRoute = KanbanRouteImport.update({
+  id: '/kanban',
+  path: '/kanban',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SegmentacaoRfmRoute = SegmentacaoRfmRouteImport.update({
+  id: '/segmentacao-rfm',
+  path: '/segmentacao-rfm',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -58,18 +82,26 @@ export interface FileRoutesByFullPath {
   '/agenda': typeof AgendaRoute
   '/atendimento': typeof AtendimentoRoute
   '/auth': typeof AuthRoute
+  '/campanhas': typeof CampanhasRoute
   '/configuracoes': typeof ConfiguracoesRoute
+  '/diagnosticos': typeof DiagnosticosRoute
   '/financeiro': typeof FinanceiroRoute
+  '/fluxos-automacao': typeof FluxosAutomacaoRoute
   '/kanban': typeof KanbanRoute
+  '/segmentacao-rfm': typeof SegmentacaoRfmRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/agenda': typeof AgendaRoute
   '/atendimento': typeof AtendimentoRoute
   '/auth': typeof AuthRoute
+  '/campanhas': typeof CampanhasRoute
   '/configuracoes': typeof ConfiguracoesRoute
+  '/diagnosticos': typeof DiagnosticosRoute
   '/financeiro': typeof FinanceiroRoute
+  '/fluxos-automacao': typeof FluxosAutomacaoRoute
   '/kanban': typeof KanbanRoute
+  '/segmentacao-rfm': typeof SegmentacaoRfmRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -77,9 +109,13 @@ export interface FileRoutesById {
   '/agenda': typeof AgendaRoute
   '/atendimento': typeof AtendimentoRoute
   '/auth': typeof AuthRoute
+  '/campanhas': typeof CampanhasRoute
   '/configuracoes': typeof ConfiguracoesRoute
+  '/diagnosticos': typeof DiagnosticosRoute
   '/financeiro': typeof FinanceiroRoute
+  '/fluxos-automacao': typeof FluxosAutomacaoRoute
   '/kanban': typeof KanbanRoute
+  '/segmentacao-rfm': typeof SegmentacaoRfmRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -88,27 +124,39 @@ export interface FileRouteTypes {
     | '/agenda'
     | '/atendimento'
     | '/auth'
+    | '/campanhas'
     | '/configuracoes'
+    | '/diagnosticos'
     | '/financeiro'
+    | '/fluxos-automacao'
     | '/kanban'
+    | '/segmentacao-rfm'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/agenda'
     | '/atendimento'
     | '/auth'
+    | '/campanhas'
     | '/configuracoes'
+    | '/diagnosticos'
     | '/financeiro'
+    | '/fluxos-automacao'
     | '/kanban'
+    | '/segmentacao-rfm'
   id:
     | '__root__'
     | '/'
     | '/agenda'
     | '/atendimento'
     | '/auth'
+    | '/campanhas'
     | '/configuracoes'
+    | '/diagnosticos'
     | '/financeiro'
+    | '/fluxos-automacao'
     | '/kanban'
+    | '/segmentacao-rfm'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -116,46 +164,22 @@ export interface RootRouteChildren {
   AgendaRoute: typeof AgendaRoute
   AtendimentoRoute: typeof AtendimentoRoute
   AuthRoute: typeof AuthRoute
+  CampanhasRoute: typeof CampanhasRoute
   ConfiguracoesRoute: typeof ConfiguracoesRoute
+  DiagnosticosRoute: typeof DiagnosticosRoute
   FinanceiroRoute: typeof FinanceiroRoute
+  FluxosAutomacaoRoute: typeof FluxosAutomacaoRoute
   KanbanRoute: typeof KanbanRoute
+  SegmentacaoRfmRoute: typeof SegmentacaoRfmRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/kanban': {
-      id: '/kanban'
-      path: '/kanban'
-      fullPath: '/kanban'
-      preLoaderRoute: typeof KanbanRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/financeiro': {
-      id: '/financeiro'
-      path: '/financeiro'
-      fullPath: '/financeiro'
-      preLoaderRoute: typeof FinanceiroRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/configuracoes': {
-      id: '/configuracoes'
-      path: '/configuracoes'
-      fullPath: '/configuracoes'
-      preLoaderRoute: typeof ConfiguracoesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/atendimento': {
-      id: '/atendimento'
-      path: '/atendimento'
-      fullPath: '/atendimento'
-      preLoaderRoute: typeof AtendimentoRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/agenda': {
@@ -165,11 +189,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AgendaRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/atendimento': {
+      id: '/atendimento'
+      path: '/atendimento'
+      fullPath: '/atendimento'
+      preLoaderRoute: typeof AtendimentoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/campanhas': {
+      id: '/campanhas'
+      path: '/campanhas'
+      fullPath: '/campanhas'
+      preLoaderRoute: typeof CampanhasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/configuracoes': {
+      id: '/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/configuracoes'
+      preLoaderRoute: typeof ConfiguracoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/diagnosticos': {
+      id: '/diagnosticos'
+      path: '/diagnosticos'
+      fullPath: '/diagnosticos'
+      preLoaderRoute: typeof DiagnosticosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/financeiro': {
+      id: '/financeiro'
+      path: '/financeiro'
+      fullPath: '/financeiro'
+      preLoaderRoute: typeof FinanceiroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fluxos-automacao': {
+      id: '/fluxos-automacao'
+      path: '/fluxos-automacao'
+      fullPath: '/fluxos-automacao'
+      preLoaderRoute: typeof FluxosAutomacaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/kanban': {
+      id: '/kanban'
+      path: '/kanban'
+      fullPath: '/kanban'
+      preLoaderRoute: typeof KanbanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/segmentacao-rfm': {
+      id: '/segmentacao-rfm'
+      path: '/segmentacao-rfm'
+      fullPath: '/segmentacao-rfm'
+      preLoaderRoute: typeof SegmentacaoRfmRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -180,9 +260,13 @@ const rootRouteChildren: RootRouteChildren = {
   AgendaRoute: AgendaRoute,
   AtendimentoRoute: AtendimentoRoute,
   AuthRoute: AuthRoute,
+  CampanhasRoute: CampanhasRoute,
   ConfiguracoesRoute: ConfiguracoesRoute,
+  DiagnosticosRoute: DiagnosticosRoute,
   FinanceiroRoute: FinanceiroRoute,
+  FluxosAutomacaoRoute: FluxosAutomacaoRoute,
   KanbanRoute: KanbanRoute,
+  SegmentacaoRfmRoute: SegmentacaoRfmRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

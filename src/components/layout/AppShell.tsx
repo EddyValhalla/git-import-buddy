@@ -8,6 +8,11 @@ import {
   LogOut,
   Sparkles,
   LayoutDashboard,
+  // Ícones para o grupo CRM Estratégico
+  PieChart,
+  Zap,
+  Megaphone,
+  Activity,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
@@ -21,6 +26,8 @@ interface NavItem {
   roles: Role[];
   /** Se true, só ativa o estilo "ativo" quando a rota é exatamente este path */
   exact?: boolean;
+  /** Separador de grupo antes deste item */
+  groupLabel?: string;
 }
 
 const NAV: NavItem[] = [
@@ -30,6 +37,11 @@ const NAV: NavItem[] = [
   { to: "/atendimento", label: "Atendimento", icon: <MessagesSquare className="h-4 w-4" />, roles: ["admin", "atendente"] },
   { to: "/financeiro", label: "Financeiro", icon: <Wallet className="h-4 w-4" />, roles: ["admin"] },
   { to: "/configuracoes", label: "Configurações", icon: <Settings className="h-4 w-4" />, roles: ["admin"] },
+  // ── CRM Estratégico (Fase 4) ──────────────────────────────────────────────
+  { to: "/segmentacao-rfm", label: "Segmentação RFM", icon: <PieChart className="h-4 w-4" />, roles: ["admin"], groupLabel: "CRM Estratégico" },
+  { to: "/fluxos-automacao", label: "Fluxos", icon: <Zap className="h-4 w-4" />, roles: ["admin"] },
+  { to: "/campanhas", label: "Campanhas", icon: <Megaphone className="h-4 w-4" />, roles: ["admin"] },
+  { to: "/diagnosticos", label: "Diagnósticos", icon: <Activity className="h-4 w-4" />, roles: ["admin"] },
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -62,19 +74,29 @@ export function AppShell({ children }: { children: ReactNode }) {
               ? pathname === item.to
               : pathname.startsWith(item.to);
             return (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all",
-                  active
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-sm"
-                    : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
+              <div key={item.to}>
+                {/* Separador de grupo */}
+                {item.groupLabel && (
+                  <div className="px-3 pt-4 pb-1">
+                    <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground/70 font-semibold">
+                      {item.groupLabel}
+                    </p>
+                    <div className="mt-1.5 h-px bg-sidebar-border/60" />
+                  </div>
                 )}
-              >
-                <span className={cn(active ? "text-primary" : "")}>{item.icon}</span>
-                {item.label}
-              </Link>
+                <Link
+                  to={item.to}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all",
+                    active
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-sm"
+                      : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
+                  )}
+                >
+                  <span className={cn(active ? "text-primary" : "")}>{item.icon}</span>
+                  {item.label}
+                </Link>
+              </div>
             );
           })}
         </nav>

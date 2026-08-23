@@ -8,6 +8,12 @@ import type {
   Mensagem,
   CrossellRegra,
 } from "./types";
+import {
+  mockAgendamentos,
+  mockFuncionarios,
+  mockProcedimentos,
+  mockClientes,
+} from "./mockData";
 
 type Listener = () => void;
 const listeners = new Set<Listener>();
@@ -128,37 +134,49 @@ export const crmStore = {
     };
   },
 
-  /** Load every CRM entity from the database. */
+  /** Carrega todas as entidades do CRM do banco de dados.
+   * Em caso de falha (ex: sem conexão ou env não configurado),
+   * usa mockData para que o UI não fique em branco durante dev. */
   loadAll: async () => {
-    const [clientes, funcionarios, procedimentos, agendamentos, mensagens, crossell] =
-      await Promise.all([
-        supabase.from("clientes").select("*").order("created_at", { ascending: true }),
-        supabase.from("funcionarios").select("*").order("nome", { ascending: true }),
-        supabase.from("procedimentos").select("*").order("nome", { ascending: true }),
-        supabase.from("agendamentos").select("*").order("data_hora_inicio", { ascending: true }),
-        supabase.from("mensagens").select("*").order("timestamp", { ascending: true }),
-        supabase.from("crossell_matriz").select("*").order("created_at", { ascending: true }),
-      ]);
+    try {
+      const [clientes, funcionarios, procedimentos, agendamentos, mensagens, crossell] =
+        await Promise.all([
+          supabase.from("clientes").select("*").order("created_at", { ascending: true }),
+          supabase.from("funcionarios").select("*").order("nome", { ascending: true }),
+          supabase.from("procedimentos").select("*").order("nome", { ascending: true }),
+          supabase.from("agendamentos").select("*").order("data_hora_inicio", { ascending: true }),
+          supabase.from("mensagens").select("*").order("timestamp", { ascending: true }),
+          supabase.from("crossell_matriz").select("*").order("created_at", { ascending: true }),
+        ]);
 
-    logError("load clientes", clientes.error);
-    logError("load funcionarios", funcionarios.error);
-    logError("load procedimentos", procedimentos.error);
-    logError("load agendamentos", agendamentos.error);
-    logError("load mensagens", mensagens.error);
-    logError("load crossell", crossell.error);
+      logError("load clientes", clientes.error);
+      logError("load funcionarios", funcionarios.error);
+      logError("load procedimentos", procedimentos.error);
+      logError("load agendamentos", agendamentos.error);
+      logError("load mensagens", mensagens.error);
+      logError("load crossell", crossell.error);
 
-    clientesState = (clientes.data ?? []) as unknown as Cliente[];
-    funcionariosState = (funcionarios.data ?? []) as unknown as Funcionario[];
-    procedimentosState = (procedimentos.data ?? []) as unknown as Procedimento[];
-    agendamentosState = (agendamentos.data ?? []) as unknown as Agendamento[];
-    crossellState = (crossell.data ?? []) as unknown as CrossellRegra[];
+      // Usa dados do banco se veio sem erro; caso contrário mantém estado atual
+      clientesState = (clientes.data ?? clientesState) as unknown as Cliente[];
+      funcionariosState = (funcionarios.data ?? funcionariosState) as unknown as Funcionario[];
+      procedimentosState = (procedimentos.data ?? procedimentosState) as unknown as Procedimento[];
+      agendamentosState = (agendamentos.data ?? agendamentosState) as unknown as Agendamento[];
+      crossellState = (crossell.data ?? crossellState) as unknown as CrossellRegra[];
 
-    const grouped: Record<string, Mensagem[]> = {};
-    for (const m of (mensagens.data ?? []) as unknown as Mensagem[]) {
-      if (!m.cliente_id) continue;
-      (grouped[m.cliente_id] ??= []).push(m);
+      const grouped: Record<string, Mensagem[]> = {};
+      for (const m of (mensagens.data ?? []) as unknown as Mensagem[]) {
+        if (!m.cliente_id) continue;
+        (grouped[m.cliente_id] ??= []).push(m);
+      }
+      mensagensState = grouped;
+    } catch (err) {
+      // Fallback para mockData em caso de erro de configuração (dev sem .env.local)
+      console.warn("[crmStore] Falha ao conectar Supabase — usando mockData:", err);
+      if (clientesState.length === 0) clientesState = mockClientes;
+      if (funcionariosState.length === 0) funcionariosState = mockFuncionarios;
+      if (procedimentosState.length === 0) procedimentosState = mockProcedimentos;
+      if (agendamentosState.length === 0) agendamentosState = mockAgendamentos;
     }
-    mensagensState = grouped;
 
     loadedState = true;
     notify();
@@ -438,8 +456,17 @@ export function useClientes(): Cliente[] {
   return useSyncExternalStore(crmStore.subscribe, crmStore.getClientes, crmStore.getClientes);
 }
 
-export function useMensagens(): Record<string, Mensagem[]> {
-  return useSyncExternalStore(crmStore.subscribe, crmStore.getMensagens, crmStore.getMensagens);
+/** Retorna o mapa completo de mensagens { clienteId -> Mensagem[] } */
+export function useMensagens(): Record<string, Mensagem[]>;
+/** Retorna as mensagens de um cliente específico, ordenadas por timestamp */
+export function useMensagens(clienteId: string): Mensagem[];
+export function useMensagens(clienteId?: string): Record<string, Mensagem[]> | Mensagem[] {
+  const all = useSyncExternalStore(crmStore.subscribe, crmStore.getMensagens, crmStore.getMensagens);
+  if (clienteId === undefined) return all;
+  // Filtra e ordena por timestamp para o chat do Atendimento
+  return (all[clienteId] ?? []).slice().sort(
+    (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+  );
 }
 
 export function useProntuarios() {
@@ -490,4 +517,217 @@ export function useCrmSync() {
 
 export function useCrossell(): CrossellRegra[] {
   return useSyncExternalStore(crmStore.subscribe, crmStore.getCrossell, crmStore.getCrossell);
+}
+
+// ── HOOKS FASE 4 (consultam diretamente o Supabase) ──────────────────────────
+// Importados aqui para evitar dependência circular com store principal.
+import { useState } from "react";
+import type {
+  FluxoAutomacao,
+  Campanha,
+  CreditoGiftback,
+  RFMSegmentacao,
+  IntervaloMedioProcedimento,
+  ReceitaRecorrenteVsNova,
+} from "./types";
+
+/** Lê a view vw_rfm_segmentacao e retorna { data, loading, error, refetch } */
+export function useRFMSegmentacao() {
+  const [data, setData] = useState<RFMSegmentacao[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetch = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data: rows, error: err } = await supabase
+        .from("vw_rfm_segmentacao")
+        .select("*");
+      if (err) throw err;
+      setData((rows ?? []) as unknown as RFMSegmentacao[]);
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { void fetch(); }, []);
+  return { data, loading, error, refetch: fetch };
+}
+
+/** CRUD completo para fluxos_automacao */
+export function useFluxosAutomacao() {
+  const [data, setData] = useState<FluxoAutomacao[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetch = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data: rows, error: err } = await supabase
+        .from("fluxos_automacao")
+        .select("*")
+        .order("dia_offset", { ascending: true });
+      if (err) throw err;
+      setData((rows ?? []) as unknown as FluxoAutomacao[]);
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const add = async (payload: Omit<FluxoAutomacao, "id" | "created_at" | "updated_at">) => {
+    const { data: row, error: err } = await supabase
+      .from("fluxos_automacao")
+      .insert(payload as never)
+      .select()
+      .single();
+    if (err) throw err;
+    setData((prev) => [...prev, row as unknown as FluxoAutomacao]);
+    return row;
+  };
+
+  const update = async (id: string, patch: Partial<FluxoAutomacao>) => {
+    const { error: err } = await supabase
+      .from("fluxos_automacao")
+      .update(patch as never)
+      .eq("id", id);
+    if (err) throw err;
+    setData((prev) => prev.map((f) => (f.id === id ? { ...f, ...patch } : f)));
+  };
+
+  const remove = async (id: string) => {
+    const { error: err } = await supabase
+      .from("fluxos_automacao")
+      .delete()
+      .eq("id", id);
+    if (err) throw err;
+    setData((prev) => prev.filter((f) => f.id !== id));
+  };
+
+  useEffect(() => { void fetch(); }, []);
+  return { data, loading, error, refetch: fetch, add, update, remove };
+}
+
+/** CRUD completo para campanhas */
+export function useCampanhas() {
+  const [data, setData] = useState<Campanha[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetch = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data: rows, error: err } = await supabase
+        .from("campanhas")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (err) throw err;
+      setData((rows ?? []) as unknown as Campanha[]);
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const add = async (payload: Omit<Campanha, "id" | "created_at" | "updated_at">) => {
+    const { data: row, error: err } = await supabase
+      .from("campanhas")
+      .insert(payload as never)
+      .select()
+      .single();
+    if (err) throw err;
+    setData((prev) => [row as unknown as Campanha, ...prev]);
+    return row;
+  };
+
+  const update = async (id: string, patch: Partial<Campanha>) => {
+    const { error: err } = await supabase
+      .from("campanhas")
+      .update(patch as never)
+      .eq("id", id);
+    if (err) throw err;
+    setData((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
+  };
+
+  const remove = async (id: string) => {
+    const { error: err } = await supabase
+      .from("campanhas")
+      .delete()
+      .eq("id", id);
+    if (err) throw err;
+    setData((prev) => prev.filter((c) => c.id !== id));
+  };
+
+  useEffect(() => { void fetch(); }, []);
+  return { data, loading, error, refetch: fetch, add, update, remove };
+}
+
+/** Créditos giftback de um cliente específico */
+export function useCreditosCliente(clienteId: string) {
+  const [data, setData] = useState<CreditoGiftback[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!clienteId) { setLoading(false); return; }
+    setLoading(true);
+    supabase
+      .from("credito_giftback")
+      .select("*")
+      .eq("cliente_id", clienteId)
+      .order("created_at", { ascending: false })
+      .then(({ data: rows }) => {
+        setData((rows ?? []) as unknown as CreditoGiftback[]);
+        setLoading(false);
+      });
+  }, [clienteId]);
+
+  return { data, loading };
+}
+
+/** Lê a view vw_intervalo_medio_procedimento */
+export function useIntervaloMedio() {
+  const [data, setData] = useState<IntervaloMedioProcedimento[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase
+      .from("vw_intervalo_medio_procedimento")
+      .select("*")
+      .then(({ data: rows, error: err }) => {
+        if (err) setError(String(err));
+        setData((rows ?? []) as unknown as IntervaloMedioProcedimento[]);
+        setLoading(false);
+      });
+  }, []);
+
+  return { data, loading, error };
+}
+
+/** Lê a view vw_receita_recorrente_vs_nova */
+export function useReceitaRecorrente() {
+  const [data, setData] = useState<ReceitaRecorrenteVsNova[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase
+      .from("vw_receita_recorrente_vs_nova")
+      .select("*")
+      .order("mes", { ascending: false })
+      .then(({ data: rows, error: err }) => {
+        if (err) setError(String(err));
+        setData((rows ?? []) as unknown as ReceitaRecorrenteVsNova[]);
+        setLoading(false);
+      });
+  }, []);
+
+  return { data, loading, error };
 }
