@@ -220,6 +220,9 @@ function ConfigPage() {
           <TabsTrigger value="procedimentos" className="rounded-lg px-6 font-medium text-xs">
             Catálogo de Procedimentos
           </TabsTrigger>
+          <TabsTrigger value="crossell" className="rounded-lg px-6 font-medium text-xs">
+            Crossell
+          </TabsTrigger>
         </TabsList>
 
         {/* TAB 1: PROFISSIONAIS */}
