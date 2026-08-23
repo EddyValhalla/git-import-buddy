@@ -130,24 +130,28 @@ export const crmStore = {
 
   /** Load every CRM entity from the database. */
   loadAll: async () => {
-    const [clientes, funcionarios, procedimentos, agendamentos, mensagens] = await Promise.all([
-      supabase.from("clientes").select("*").order("created_at", { ascending: true }),
-      supabase.from("funcionarios").select("*").order("nome", { ascending: true }),
-      supabase.from("procedimentos").select("*").order("nome", { ascending: true }),
-      supabase.from("agendamentos").select("*").order("data_hora_inicio", { ascending: true }),
-      supabase.from("mensagens").select("*").order("timestamp", { ascending: true }),
-    ]);
+    const [clientes, funcionarios, procedimentos, agendamentos, mensagens, crossell] =
+      await Promise.all([
+        supabase.from("clientes").select("*").order("created_at", { ascending: true }),
+        supabase.from("funcionarios").select("*").order("nome", { ascending: true }),
+        supabase.from("procedimentos").select("*").order("nome", { ascending: true }),
+        supabase.from("agendamentos").select("*").order("data_hora_inicio", { ascending: true }),
+        supabase.from("mensagens").select("*").order("timestamp", { ascending: true }),
+        supabase.from("crossell_matriz").select("*").order("created_at", { ascending: true }),
+      ]);
 
     logError("load clientes", clientes.error);
     logError("load funcionarios", funcionarios.error);
     logError("load procedimentos", procedimentos.error);
     logError("load agendamentos", agendamentos.error);
     logError("load mensagens", mensagens.error);
+    logError("load crossell", crossell.error);
 
     clientesState = (clientes.data ?? []) as unknown as Cliente[];
     funcionariosState = (funcionarios.data ?? []) as unknown as Funcionario[];
     procedimentosState = (procedimentos.data ?? []) as unknown as Procedimento[];
     agendamentosState = (agendamentos.data ?? []) as unknown as Agendamento[];
+    crossellState = (crossell.data ?? []) as unknown as CrossellRegra[];
 
     const grouped: Record<string, Mensagem[]> = {};
     for (const m of (mensagens.data ?? []) as unknown as Mensagem[]) {
