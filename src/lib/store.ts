@@ -487,3 +487,7 @@ export function useCrmSync() {
     };
   }, []);
 }
+
+export function useCrossell(): CrossellRegra[] {
+  return useSyncExternalStore(crmStore.subscribe, crmStore.getCrossell, crmStore.getCrossell);
+}
