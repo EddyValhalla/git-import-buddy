@@ -196,3 +196,15 @@ export interface ReceitaRecorrenteVsNova {
   clientes_novos: number;
   clientes_recorrentes: number;
 }
+
+/** Horário de funcionamento de um dia da semana */
+export interface HorarioFuncionamento {
+  id: string;
+  /** 0=Domingo, 1=Segunda ... 6=Sábado */
+  dia_semana: number;
+  aberto: boolean;
+  hora_inicio: string | null; // "HH:MM"
+  hora_fim: string | null;    // "HH:MM"
+  criado_em?: string;
+  atualizado_em?: string;
+}

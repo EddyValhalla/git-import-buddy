@@ -529,6 +529,7 @@ import type {
   RFMSegmentacao,
   IntervaloMedioProcedimento,
   ReceitaRecorrenteVsNova,
+  HorarioFuncionamento,
 } from "./types";
 
 /** Lê a view vw_rfm_segmentacao e retorna { data, loading, error, refetch } */
@@ -730,4 +731,59 @@ export function useReceitaRecorrente() {
   }, []);
 
   return { data, loading, error };
+}
+
+/** CRUD completo para horários de funcionamento */
+export function useHorariosFuncionamento() {
+  const DIAS = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
+
+  const defaultHorarios: HorarioFuncionamento[] = DIAS.map((_, i) => ({
+    id: `default-${i}`,
+    dia_semana: i,
+    aberto: i !== 0, // Domingo fechado por padrão
+    hora_inicio: i === 0 ? null : i === 6 ? "09:00" : "09:00",
+    hora_fim: i === 0 ? null : i === 6 ? "15:00" : "19:00",
+  }));
+
+  const [data, setData] = useState<HorarioFuncionamento[]>(defaultHorarios);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetch = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: rows, error: err } = await (supabase as any)
+        .from("horarios_funcionamento")
+        .select("*")
+        .order("dia_semana", { ascending: true });
+      if (err) throw err;
+      if (rows && rows.length > 0) {
+        setData(rows as unknown as HorarioFuncionamento[]);
+      }
+      // se a tabela estiver vazia, mantém defaults
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const update = async (id: string, patch: Partial<Pick<HorarioFuncionamento, "aberto" | "hora_inicio" | "hora_fim">>) => {
+    // Optimistic update local
+    setData((prev) => prev.map((h) => (h.id === id ? { ...h, ...patch } : h)));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error: err } = await (supabase as any)
+      .from("horarios_funcionamento")
+      .update({ aberto: patch.aberto, hora_inicio: patch.hora_inicio, hora_fim: patch.hora_fim, atualizado_em: new Date().toISOString() })
+      .eq("id", id);
+    if (err) {
+      setError(String(err));
+      await fetch(); // reverte em caso de erro
+    }
+  };
+
+  useEffect(() => { void fetch(); }, []);
+  return { data, loading, error, refetch: fetch, update };
 }
