@@ -119,6 +119,12 @@ export type Database = {
           temperatura: string | null
           ultima_interacao: string | null
           updated_at: string | null
+          // Campos RFM (Fase 4)
+          total_gasto: number | null
+          qtd_procedimentos: number | null
+          ultima_compra: string | null
+          ticket_medio: number | null
+          rfm_segmento: string | null
         }
         Insert: {
           aguardando_humano?: boolean | null
@@ -134,6 +140,11 @@ export type Database = {
           temperatura?: string | null
           ultima_interacao?: string | null
           updated_at?: string | null
+          total_gasto?: number | null
+          qtd_procedimentos?: number | null
+          ultima_compra?: string | null
+          ticket_medio?: number | null
+          rfm_segmento?: string | null
         }
         Update: {
           aguardando_humano?: boolean | null
@@ -149,6 +160,11 @@ export type Database = {
           temperatura?: string | null
           ultima_interacao?: string | null
           updated_at?: string | null
+          total_gasto?: number | null
+          qtd_procedimentos?: number | null
+          ultima_compra?: string | null
+          ticket_medio?: number | null
+          rfm_segmento?: string | null
         }
         Relationships: []
       }
@@ -199,6 +215,97 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      // Tabelas Fase 4
+      campanhas: {
+        Row: {
+          id: string
+          nome: string
+          data_disparo: string | null
+          segmento_alvo: string | null
+          template: string
+          status: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          nome: string
+          data_disparo?: string | null
+          segmento_alvo?: string | null
+          template: string
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          nome?: string
+          data_disparo?: string | null
+          segmento_alvo?: string | null
+          template?: string
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      credito_giftback: {
+        Row: {
+          id: string
+          cliente_id: string
+          valor: number
+          validade: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          cliente_id: string
+          valor: number
+          validade?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          cliente_id?: string
+          valor?: number
+          validade?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      fluxos_automacao: {
+        Row: {
+          id: string
+          procedimento_id: string | null
+          dia_offset: number
+          tipo_mensagem: string
+          template: string
+          ativo: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          procedimento_id?: string | null
+          dia_offset: number
+          tipo_mensagem: string
+          template: string
+          ativo?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          procedimento_id?: string | null
+          dia_offset?: number
+          tipo_mensagem?: string
+          template?: string
+          ativo?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       fotos_paciente: {
         Row: {
@@ -575,6 +682,44 @@ export type Database = {
           mes: string | null
           nao_compareceram: number | null
           total_agendamentos: number | null
+        }
+        Relationships: []
+      }
+      // Views Fase 4
+      vw_rfm_segmentacao: {
+        Row: {
+          id: string | null
+          nome: string | null
+          telefone: string | null
+          origem: string | null
+          temperatura: string | null
+          rfm_segmento: string | null
+          total_gasto: number | null
+          qtd_procedimentos: number | null
+          ultima_compra: string | null
+          ticket_medio: number | null
+          dias_sem_compra: number | null
+          ultimo_contato: string | null
+        }
+        Relationships: []
+      }
+      vw_intervalo_medio_procedimento: {
+        Row: {
+          procedimento_id: string | null
+          procedimento_nome: string | null
+          total_realizados: number | null
+          intervalo_medio_dias: number | null
+        }
+        Relationships: []
+      }
+      vw_receita_recorrente_vs_nova: {
+        Row: {
+          mes: string | null
+          receita_nova: number | null
+          receita_recorrente: number | null
+          receita_total: number | null
+          clientes_novos: number | null
+          clientes_recorrentes: number | null
         }
         Relationships: []
       }

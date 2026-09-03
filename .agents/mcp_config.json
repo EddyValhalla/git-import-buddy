@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "n8n-mcp": {
+      "command": "npx",
+      "args": ["n8n-mcp"],
+      "env": {
+        "MCP_MODE": "stdio",
+        "LOG_LEVEL": "error",
+        "DISABLE_CONSOLE_OUTPUT": "true",
+        "N8N_API_URL": "https://n8n.vps1028.panel.speedfy.host",
+        "N8N_BASE_URL": "https://n8n.vps1028.panel.speedfy.host",
+        "N8N_API_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjMWFjOTc5Yy0zNDE2LTRkNDItYWI0OS04NmIyNzM0MmM0N2YiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiM2E2MGE5ZTItZWZjNS00ZDkzLThkNDItZTA3YWMyOTllYjU0IiwiaWF0IjoxNzg4MDI3NzkzfQ.hCUu0LkTjxFWZ23W87dVVqNNMGOQIfZ6kSuanXMxI38"
+      }
+    }
+  }
+}

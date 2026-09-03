@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { ProtectedLayout } from "@/components/layout/ProtectedLayout";
 import { useAgendamentos, useFuncionarios, useProcedimentos, crmStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
-import { ChevronLeft, ChevronRight, CalendarDays, Plus, Trash2, Edit3, Clock, Lock } from "lucide-react";
+import { ChevronLeft, ChevronRight, CalendarDays, Plus, Trash2, Edit3, Clock, Lock, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { StatusAgenda, StatusKanban } from "@/lib/types";
 import { checkScheduleConflict } from "@/lib/scheduleConflict";
@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { HorariosModal } from "@/features/agenda/HorariosModal";
 
 export const Route = createFileRoute("/agenda")({
   component: () => (
@@ -66,6 +67,8 @@ function AgendaPage() {
 
   // Modal states - Edit/Manage Appointment
   const [selectedAgendamento, setSelectedAgendamento] = useState<any | null>(null);
+  // Horários de Funcionamento modal
+  const [isHorariosOpen, setIsHorariosOpen] = useState(false);
   const [editPacNome, setEditPacNome] = useState("");
   const [editPacTel, setEditPacTel] = useState("");
   const [editProcId, setEditProcId] = useState("");
@@ -315,6 +318,15 @@ function AgendaPage() {
           <Button onClick={handleOpenNew} className="shadow-md flex items-center gap-2 pr-5">
             <Plus className="h-4.5 w-4.5" />
             <span>Novo Agendamento</span>
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            title="Configurar Horários de Funcionamento"
+            className="h-9 w-9 shadow-sm"
+            onClick={() => setIsHorariosOpen(true)}
+          >
+            <Settings className="h-4 w-4" />
           </Button>
         </div>
       </header>
@@ -782,6 +794,12 @@ function AgendaPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* MODAL: HORÁRIOS DE FUNCIONAMENTO */}
+      <HorariosModal
+        open={isHorariosOpen}
+        onClose={() => setIsHorariosOpen(false)}
+      />
     </div>
   );
 }

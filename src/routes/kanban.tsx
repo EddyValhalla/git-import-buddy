@@ -398,7 +398,7 @@ function KanbanBoard() {
 
       {/* MODAL: NOVO LEAD */}
       <Dialog open={isNewLeadOpen} onOpenChange={setIsNewLeadOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md" style={{ zIndex: 10000 }}>
           <DialogHeader>
             <DialogTitle className="font-display text-2xl flex items-center gap-2">
               <User className="h-5 w-5 text-primary" />
@@ -439,7 +439,7 @@ function KanbanBoard() {
                 <SelectTrigger id="newLeadOrigem">
                   <SelectValue placeholder="Selecione a origem" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent position="popper" sideOffset={4} className="z-[10100]">
                   <SelectItem value="whatsapp">WhatsApp</SelectItem>
                   <SelectItem value="instagram">Instagram</SelectItem>
                   <SelectItem value="presencial">Atendimento no Local (Presencial)</SelectItem>
@@ -456,7 +456,7 @@ function KanbanBoard() {
                 <SelectTrigger id="newLeadProcedimento">
                   <SelectValue placeholder="Selecione um procedimento" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent position="popper" sideOffset={4} className="z-[10100]">
                   {procedimentos.map((p) => (
                     <SelectItem key={p.id} value={p.id}>
                       {p.nome} (R$ {p.valor_sugerido})
@@ -496,7 +496,7 @@ function KanbanBoard() {
         open={Boolean(editingLead)}
         onOpenChange={(o) => !o && setEditingLead(null)}
       >
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md" style={{ zIndex: 10000 }}>
           <DialogHeader>
             <DialogTitle className="font-display text-2xl flex items-center gap-2">
               <Settings2 className="h-5 w-5 text-primary" />
@@ -535,7 +535,7 @@ function KanbanBoard() {
                 <SelectTrigger id="editLeadOrigem">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent position="popper" sideOffset={4} className="z-[10100]">
                   <SelectItem value="whatsapp">WhatsApp</SelectItem>
                   <SelectItem value="instagram">Instagram</SelectItem>
                   <SelectItem value="presencial">Atendimento no Local (Presencial)</SelectItem>
@@ -552,7 +552,7 @@ function KanbanBoard() {
                 <SelectTrigger id="editLeadTemperatura">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent position="popper" sideOffset={4} className="z-[10100]">
                   <SelectItem value="NENHUMA">Sem classificação</SelectItem>
                   <SelectItem value="QUENTE">🔥 Quente</SelectItem>
                   <SelectItem value="MORNO">🌡️ Morno</SelectItem>
@@ -571,7 +571,7 @@ function KanbanBoard() {
                 <SelectTrigger id="editLeadProcedimento">
                   <SelectValue placeholder="Selecione um procedimento" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent position="popper" sideOffset={4} className="z-[10100]">
                   {crmStore.getProcedimentos().map((p) => (
                     <SelectItem key={p.id} value={p.id}>
                       {p.nome} (R$ {p.valor_sugerido})
@@ -601,7 +601,7 @@ function KanbanBoard() {
                   <SelectTrigger id="editLeadStatus">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent position="popper" sideOffset={4} className="z-[10100]">
                     {KANBAN_COLUMNS.map((col) => (
                       <SelectItem key={col.id} value={col.id}>
                         {col.label}

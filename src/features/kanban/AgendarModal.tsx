@@ -112,7 +112,7 @@ export function AgendarModal({ open, card, onSave, onCancel }: AgendarModalProps
         if (!isOpen) onCancel();
       }}
     >
-      <DialogContent className="sm:max-w-md z-[9999]">
+      <DialogContent className="sm:max-w-md" style={{ zIndex: 10000 }}>
         <DialogHeader>
           <DialogTitle className="font-display text-2xl flex items-center gap-2">
             <CalendarDays className="h-5 w-5 text-primary" />
@@ -190,7 +190,7 @@ export function AgendarModal({ open, card, onSave, onCancel }: AgendarModalProps
                 <SelectTrigger id="agendar-func">
                   <SelectValue placeholder="Selecione um profissional" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent position="popper" sideOffset={4} className="z-[10100]">
                   {funcionarios.map((f) => (
                     <SelectItem key={f.id} value={f.id}>
                       {f.nome}
@@ -211,7 +211,7 @@ export function AgendarModal({ open, card, onSave, onCancel }: AgendarModalProps
               <SelectTrigger id="agendar-status">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent position="popper" sideOffset={4} className="z-[10100]">
                 <SelectItem value="pendente">Pendente (Aguardando confirmação)</SelectItem>
                 <SelectItem value="confirmado">Confirmado ✓</SelectItem>
                 <SelectItem value="reagendar">Reagendar</SelectItem>

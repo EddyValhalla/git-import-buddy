@@ -33,7 +33,29 @@ export interface Cliente {
   aguardando_humano?: boolean;
   /** Temperatura do lead */
   temperatura?: "QUENTE" | "MORNO" | "FRIO";
+  // ── Campos RFM (Fase 4) ──────────────────────────────
+  /** Valor total gasto pelo cliente (soma dos procedimentos concluídos) */
+  total_gasto?: number;
+  /** Quantidade de procedimentos realizados */
+  qtd_procedimentos?: number;
+  /** Data/hora da última compra concluída */
+  ultima_compra?: string;
+  /** Ticket médio por procedimento */
+  ticket_medio?: number;
+  /** Segmento RFM calculado pelo trigger recalcular_rfm() */
+  rfm_segmento?: RFMSegmento;
 }
+
+/** Valores possíveis de segmento RFM */
+export type RFMSegmento =
+  | "Campeoes"
+  | "Leais"
+  | "Potencial"
+  | "Novos"
+  | "Em_Risco"
+  | "Inativos"
+  | "Perdidos"
+  | "Indefinido";
 
 export interface Mensagem {
   id: string;
@@ -43,10 +65,8 @@ export interface Mensagem {
   timestamp: string;
 }
 
-
 /**
  * Novo funil simplificado com 4 estágios.
- * Migrado de: novo_lead | contato_feito | interesse | agendado | realizado | fidelizacao
  */
 export type StatusKanban =
   | "novos_clientes"
@@ -68,14 +88,10 @@ export interface Agendamento {
   profissional_responsavel?: string;
   lote_produto?: string;
   data_retorno?: string;
-  /** Tipo de atendimento realizado */
   tipo_atendimento?: "humano" | "ia";
-  /** Indica se o agendamento foi iniciado exclusivamente pela IA */
   agendado_por_ia?: boolean;
-  // Denormalized for UI
   cliente_nome?: string;
   procedimento_nome?: string;
-  /** Campo auxiliar para compatibilidade com modal de agenda */
   procedimento_name?: string;
   duracao_minutos?: number;
   updated_at?: string;
@@ -98,4 +114,97 @@ export interface CrossellRegra {
   ativo: boolean;
   created_at?: string;
   updated_at?: string;
+}
+
+// ── FASE 4 ────────────────────────────────────────────────────────────────────
+
+/** Tipo de mensagem do fluxo de automação */
+export type TipoMensagem =
+  | "nutricao"
+  | "checkin"
+  | "crossell"
+  | "risco"
+  | "reposicao"
+  | "lembrete";
+
+/** Fluxo de automação pós-procedimento */
+export interface FluxoAutomacao {
+  id: string;
+  procedimento_id: string | null;
+  dia_offset: number;
+  tipo_mensagem: TipoMensagem;
+  template: string;
+  ativo: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+/** Status de uma campanha */
+export type StatusCampanha = "agendada" | "enviada" | "cancelada" | "rascunho";
+
+/** Campanha de marketing segmentada por RFM */
+export interface Campanha {
+  id: string;
+  nome: string;
+  data_disparo: string | null;
+  segmento_alvo: RFMSegmento | null;
+  template: string;
+  status: StatusCampanha;
+  created_at?: string;
+  updated_at?: string;
+}
+
+/** Crédito giftback de um cliente */
+export interface CreditoGiftback {
+  id: string;
+  cliente_id: string;
+  valor: number;
+  validade: string | null;
+  created_at?: string;
+}
+
+/** Linha da view vw_rfm_segmentacao */
+export interface RFMSegmentacao {
+  id: string;
+  nome: string;
+  telefone: string;
+  origem: string | null;
+  temperatura: string | null;
+  rfm_segmento: RFMSegmento | null;
+  total_gasto: number | null;
+  qtd_procedimentos: number | null;
+  ultima_compra: string | null;
+  ticket_medio: number | null;
+  dias_sem_compra: number | null;
+  ultimo_contato: string | null;
+}
+
+/** Linha da view vw_intervalo_medio_procedimento */
+export interface IntervaloMedioProcedimento {
+  procedimento_id: string;
+  procedimento_nome: string;
+  total_realizados: number;
+  intervalo_medio_dias: number | null;
+}
+
+/** Linha da view vw_receita_recorrente_vs_nova */
+export interface ReceitaRecorrenteVsNova {
+  mes: string;
+  receita_nova: number;
+  receita_recorrente: number;
+  receita_total: number;
+  clientes_novos: number;
+  clientes_recorrentes: number;
+}
+
+/** Horário de funcionamento de um dia da semana */
+export interface HorarioFuncionamento {
+  id: string;
+  /** 0=Domingo, 1=Segunda ... 6=Sábado */
+  dia_semana: number;
+  aberto: boolean;
+  hora_inicio: string | null; // "HH:MM"
+  hora_fim: string | null;    // "HH:MM"
+  criado_em?: string;
+  atualizado_em?: string;
 }

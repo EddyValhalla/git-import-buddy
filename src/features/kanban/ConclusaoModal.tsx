@@ -80,7 +80,7 @@ export function ConclusaoModal({ open, card, onSave, onCancel }: ConclusaoModalP
         if (!isOpen) onCancel();
       }}
     >
-      <DialogContent className="sm:max-w-md z-[9999]">
+      <DialogContent className="sm:max-w-md" style={{ zIndex: 10000 }}>
         <DialogHeader>
           <DialogTitle className="font-display text-2xl flex items-center gap-2">
             <ClipboardCheck className="h-6 w-6 text-primary" />
@@ -120,7 +120,7 @@ export function ConclusaoModal({ open, card, onSave, onCancel }: ConclusaoModalP
               <SelectTrigger id="concluir-prof">
                 <SelectValue placeholder="Selecione o profissional" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent position="popper" sideOffset={4} className="z-[10100]">
                 {funcionarios.map((f) => (
                   <SelectItem key={f.id} value={f.id}>
                     {f.nome}
