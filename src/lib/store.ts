@@ -7,6 +7,7 @@ import type {
   Cliente,
   Mensagem,
   CrossellRegra,
+  Carrinho,
 } from "./types";
 import {
   mockAgendamentos,
@@ -27,6 +28,7 @@ let procedimentosState: Procedimento[] = [];
 let clientesState: Cliente[] = [];
 let mensagensState: Record<string, Mensagem[]> = {};
 let crossellState: CrossellRegra[] = [];
+let carrinhosState: Carrinho[] = [];
 let loadedState = false;
 
 // Prontuário / fotos remain local (no storage bucket configured yet)
@@ -112,6 +114,18 @@ const newId = () =>
     ? crypto.randomUUID()
     : Math.random().toString(36).slice(2);
 
+const CARRINHO_COLS = [
+  "cliente_id",
+  "status",
+  "procedimento_interesse",
+  "valor_estimado",
+  "motivo_interesse",
+  "mensagens_enviadas",
+  "ultima_mensagem_em",
+  "proxima_mensagem_em",
+  "intervalo_recaptura_dias",
+] as const;
+
 // ---------------------------------------------------------------------------
 // Store
 // ---------------------------------------------------------------------------
@@ -122,6 +136,7 @@ export const crmStore = {
   getClientes: () => clientesState,
   getMensagens: () => mensagensState,
   getCrossell: () => crossellState,
+  getCarrinhos: () => carrinhosState,
   getProntuarios: () => prontuariosState,
   getFotos: () => fotosState,
   getLoaded: () => loadedState,
@@ -139,7 +154,7 @@ export const crmStore = {
    * usa mockData para que o UI não fique em branco durante dev. */
   loadAll: async () => {
     try {
-      const [clientes, funcionarios, procedimentos, agendamentos, mensagens, crossell] =
+      const [clientes, funcionarios, procedimentos, agendamentos, mensagens, crossell, carrinhos] =
         await Promise.all([
           supabase.from("clientes").select("*").order("created_at", { ascending: true }),
           supabase.from("funcionarios").select("*").order("nome", { ascending: true }),
@@ -147,6 +162,7 @@ export const crmStore = {
           supabase.from("agendamentos").select("*").order("data_hora_inicio", { ascending: true }),
           supabase.from("mensagens").select("*").order("timestamp", { ascending: true }),
           supabase.from("crossell_matriz").select("*").order("created_at", { ascending: true }),
+          supabase.from("carrinho").select("*").order("criado_em", { ascending: false }),
         ]);
 
       logError("load clientes", clientes.error);
@@ -155,6 +171,7 @@ export const crmStore = {
       logError("load agendamentos", agendamentos.error);
       logError("load mensagens", mensagens.error);
       logError("load crossell", crossell.error);
+      logError("load carrinhos", carrinhos.error);
 
       // Usa dados do banco se veio sem erro; caso contrário mantém estado atual
       clientesState = (clientes.data ?? clientesState) as unknown as Cliente[];
@@ -162,6 +179,7 @@ export const crmStore = {
       procedimentosState = (procedimentos.data ?? procedimentosState) as unknown as Procedimento[];
       agendamentosState = (agendamentos.data ?? agendamentosState) as unknown as Agendamento[];
       crossellState = (crossell.data ?? crossellState) as unknown as CrossellRegra[];
+      carrinhosState = (carrinhos.data ?? carrinhosState) as unknown as Carrinho[];
 
       const grouped: Record<string, Mensagem[]> = {};
       for (const m of (mensagens.data ?? []) as unknown as Mensagem[]) {
@@ -400,6 +418,40 @@ export const crmStore = {
       .then(({ error }) => logError("delete crossell", error));
   },
 
+  // ---------------- Carrinho ----------------
+  addCarrinho: (c: Partial<Carrinho>) => {
+    const newC: Carrinho = {
+      ...c,
+      id: newId(),
+      mensagens_enviadas: 0,
+      intervalo_recaptura_dias: c.intervalo_recaptura_dias || 3,
+      status: c.status || "PENSANDO",
+      cliente_id: c.cliente_id || "",
+    } as Carrinho;
+    
+    carrinhosState = [newC, ...carrinhosState];
+    notify();
+    
+    void supabase
+      .from("carrinho")
+      .insert({ id: newC.id, ...pick(newC, CARRINHO_COLS) } as never)
+      .then(({ error }) => logError("insert carrinho", error));
+    return newC;
+  },
+  updateCarrinho: (id: string, patch: Partial<Carrinho>) => {
+    carrinhosState = carrinhosState.map((c) => (c.id === id ? { ...c, ...patch } : c));
+    notify();
+    
+    const payload = pick(patch, [...CARRINHO_COLS, "finalizado_por", "finalizado_em", "motivo_finalizacao"]);
+    if (Object.keys(payload).length === 0) return;
+    
+    void supabase
+      .from("carrinho")
+      .update(payload as never)
+      .eq("id", id)
+      .then(({ error }) => logError("update carrinho", error));
+  },
+
   // ---------------- Prontuários (local) ----------------
   updateProntuario: (
     clienteId: string,
@@ -519,6 +571,10 @@ export function useCrossell(): CrossellRegra[] {
   return useSyncExternalStore(crmStore.subscribe, crmStore.getCrossell, crmStore.getCrossell);
 }
 
+export function useCarrinhos(): Carrinho[] {
+  return useSyncExternalStore(crmStore.subscribe, crmStore.getCarrinhos, crmStore.getCarrinhos);
+}
+
 // ── HOOKS FASE 4 (consultam diretamente o Supabase) ──────────────────────────
 // Importados aqui para evitar dependência circular com store principal.
 import { useState } from "react";
@@ -530,6 +586,8 @@ import type {
   IntervaloMedioProcedimento,
   ReceitaRecorrenteVsNova,
   HorarioFuncionamento,
+  Pacote,
+  PacoteSessao,
 } from "./types";
 
 /** Lê a view vw_rfm_segmentacao e retorna { data, loading, error, refetch } */
@@ -786,4 +844,52 @@ export function useHorariosFuncionamento() {
 
   useEffect(() => { void fetch(); }, []);
   return { data, loading, error, refetch: fetch, update };
+}
+
+/** Lê os pacotes de um cliente específico */
+export function usePacotesCliente(clienteId: string | null) {
+  const [data, setData] = useState<Pacote[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetch = async () => {
+    if (!clienteId) { setLoading(false); return; }
+    setLoading(true);
+    const { data: rows } = await supabase
+      .from("pacotes")
+      .select("*")
+      .eq("cliente_id", clienteId)
+      .order("criado_em", { ascending: false });
+    setData((rows ?? []) as unknown as Pacote[]);
+    setLoading(false);
+  };
+
+  useEffect(() => { void fetch(); }, [clienteId]);
+  return { data, loading, refetch: fetch };
+}
+
+/** Lê as sessões de um pacote específico */
+export function useSessoesPacote(pacoteId: string | null) {
+  const [data, setData] = useState<PacoteSessao[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetch = async () => {
+    if (!pacoteId) { setLoading(false); return; }
+    setLoading(true);
+    const { data: rows } = await supabase
+      .from("pacote_sessoes")
+      .select("*")
+      .eq("pacote_id", pacoteId)
+      .order("numero_sessao", { ascending: true });
+    setData((rows ?? []) as unknown as PacoteSessao[]);
+    setLoading(false);
+  };
+
+  useEffect(() => { void fetch(); }, [pacoteId]);
+
+  const update = async (id: string, patch: Partial<PacoteSessao>) => {
+    setData((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)));
+    await supabase.from("pacote_sessoes").update(patch as never).eq("id", id);
+  };
+
+  return { data, loading, refetch: fetch, update };
 }

@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { ProtectedLayout } from "@/components/layout/ProtectedLayout";
 import { useAgendamentos, useFuncionarios, useProcedimentos, crmStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
-import { ChevronLeft, ChevronRight, CalendarDays, Plus, Trash2, Edit3, Clock, Lock, Settings } from "lucide-react";
+import { ChevronLeft, ChevronRight, CalendarDays, Plus, Trash2, Edit3, Clock, Lock, Settings, Bell, CheckCircle2, Link as LinkIcon, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { StatusAgenda, StatusKanban } from "@/lib/types";
 import { checkScheduleConflict } from "@/lib/scheduleConflict";
@@ -321,6 +321,19 @@ function AgendaPage() {
           </Button>
           <Button
             variant="outline"
+            className="shadow-sm flex items-center gap-2"
+            onClick={() => {
+              // Aqui usamos um "id de cliente" mock para demonstrar, num cenário real você copiaria o link do paciente atual.
+              // Como a agenda é geral, vamos só simular copiar o link de um "novo agendamento genérico".
+              navigator.clipboard.writeText(`${window.location.origin}/agendar/mock-token-123`);
+              toast.success("Link de agendamento copiado!");
+            }}
+          >
+            <LinkIcon className="h-4 w-4" />
+            <span>Link Online</span>
+          </Button>
+          <Button
+            variant="outline"
             size="icon"
             title="Configurar Horários de Funcionamento"
             className="h-9 w-9 shadow-sm"
@@ -478,6 +491,18 @@ function AgendaPage() {
                           <p className="opacity-80 truncate text-[10px]">
                             {a.procedimento_nome}
                           </p>
+                          <div className="flex items-center gap-1.5 mt-1">
+                            {a.lembrete_enviado && (
+                              <span title="Lembrete WhatsApp Enviado" className="bg-primary/20 text-primary rounded-full p-0.5">
+                                <Bell className="h-3 w-3" />
+                              </span>
+                            )}
+                            {a.confirmado && (
+                              <span title="Confirmado pelo Paciente" className="bg-emerald-500/20 text-emerald-700 rounded-full p-0.5">
+                                <CheckCircle2 className="h-3 w-3" />
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <div className="flex items-center justify-between text-[9px] opacity-60 font-mono mt-1">
                           <span className="uppercase tracking-wider font-semibold flex items-center gap-1">

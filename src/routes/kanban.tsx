@@ -19,7 +19,8 @@ import { kanbanStore, useKanbanCards } from "@/features/kanban/store";
 import { crmStore, useProcedimentos, useClientes } from "@/lib/store";
 import type { Agendamento, StatusKanban } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { Plus, Sparkles, Clock, User, Settings2 } from "lucide-react";
+import { Plus, Sparkles, Clock, User, Settings2, CalendarCheck, CheckCircle2, Circle, AlertCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -91,6 +92,24 @@ function KanbanBoard() {
   const [editLeadOrigem, setEditLeadOrigem] = useState<"whatsapp" | "instagram" | "presencial">("whatsapp");
   const [editLeadTemperatura, setEditLeadTemperatura] = useState<"QUENTE" | "MORNO" | "FRIO" | "NENHUMA">("NENHUMA");
 
+  // Hoje
+  const hoje = new Date();
+  const isToday = (dateStr?: string | null) => {
+    if (!dateStr) return false;
+    const d = new Date(dateStr);
+    return d.getFullYear() === hoje.getFullYear() &&
+           d.getMonth() === hoje.getMonth() &&
+           d.getDate() === hoje.getDate();
+  };
+
+  const filteredCards = useMemo(() => {
+    return cards.filter((c) => {
+      // Mostrar se for novo cliente (sem data) ou agendamento para hoje
+      if (c.status_kanban === "novos_clientes" && !c.data_hora_inicio) return true;
+      return isToday(c.data_hora_inicio);
+    });
+  }, [cards]);
+
   const grouped = useMemo(() => {
     const acc: Record<StatusKanban, Agendamento[]> = {
       novos_clientes: [],
@@ -98,13 +117,13 @@ function KanbanBoard() {
       agendado: [],
       concluido: [],
     };
-    cards.forEach((c) => {
+    filteredCards.forEach((c) => {
       if (acc[c.status_kanban] !== undefined) {
         acc[c.status_kanban].push(c);
       }
     });
     return acc;
-  }, [cards]);
+  }, [filteredCards]);
 
   const onDragStart = (e: DragStartEvent) => {
     const cardId = String(e.active.id);
@@ -196,7 +215,18 @@ function KanbanBoard() {
       lote_produto: data.lote_produto,
       data_retorno: data.data_retorno,
     });
-    toast.success(`${pendingCompletion.card.cliente_nome} finalizado com sucesso!`);
+
+    if (!data.data_retorno) {
+      crmStore.addCarrinho({
+        cliente_id: pendingCompletion.card.cliente_id,
+        procedimento_interesse: pendingCompletion.card.procedimento_id,
+        status: "PENSANDO",
+      });
+      toast.success(`${pendingCompletion.card.cliente_nome} enviado para o Carrinho de Orçamentos!`);
+    } else {
+      toast.success(`${pendingCompletion.card.cliente_nome} finalizado com sucesso!`);
+    }
+    
     setPendingCompletion(null);
   };
 
@@ -378,6 +408,54 @@ function KanbanBoard() {
             ) : null}
           </DragOverlay>
         </DndContext>
+      </div>
+
+      {/* AGENDA DO DIA NO RODAPÉ */}
+      <div className="bg-background border-t border-border p-6 min-h-[300px] overflow-y-auto">
+        <div className="flex items-center gap-2 mb-4">
+          <CalendarCheck className="h-5 w-5 text-primary" />
+          <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">
+            Agenda de Hoje
+          </h2>
+        </div>
+        <div className="grid gap-3 max-w-[1200px]">
+          {filteredCards.filter(c => c.data_hora_inicio).sort((a, b) => new Date(a.data_hora_inicio!).getTime() - new Date(b.data_hora_inicio!).getTime()).map(a => (
+            <div key={a.id} className="flex items-center justify-between p-4 rounded-xl border border-border bg-card shadow-sm hover:shadow transition-shadow">
+              <div className="flex items-center gap-6">
+                <div className="flex items-center gap-2 text-primary font-mono font-semibold">
+                  <Clock className="h-4 w-4" />
+                  {new Date(a.data_hora_inicio!).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})}
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground">{a.cliente_nome}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{a.procedimento_nome ?? procedimentos.find(p => p.id === a.procedimento_id)?.nome}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                 <span className={cn(
+                    "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border",
+                    a.status_agenda === "confirmado" ? "text-emerald-700 bg-emerald-50 border-emerald-200" :
+                    a.status_agenda === "reagendar" ? "text-rose-600 bg-rose-50 border-rose-200" :
+                    "text-amber-600 bg-amber-50 border-amber-200"
+                  )}>
+                    {a.status_agenda === "confirmado" ? <CheckCircle2 className="h-3.5 w-3.5" /> :
+                     a.status_agenda === "reagendar" ? <AlertCircle className="h-3.5 w-3.5" /> :
+                     <Circle className="h-3.5 w-3.5" />}
+                    {a.status_agenda === "confirmado" ? "Confirmado" :
+                     a.status_agenda === "reagendar" ? "Reagendar" : "Pendente"}
+                  </span>
+              </div>
+            </div>
+          ))}
+          {filteredCards.filter(c => c.data_hora_inicio).length === 0 && (
+            <div className="flex flex-col items-center justify-center py-10 rounded-xl border border-dashed border-border bg-card/50 text-center">
+              <CalendarCheck className="h-8 w-8 text-muted-foreground/40 mb-3" />
+              <p className="text-sm text-muted-foreground">
+                Nenhum agendamento marcado para hoje.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* MODAL: CONFIRMAR AGENDAMENTO (drag → agendado) */}

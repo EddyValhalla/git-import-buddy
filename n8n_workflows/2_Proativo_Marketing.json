@@ -1,0 +1,272 @@
+{
+  "name": "2_Proativo_Marketing",
+  "nodes": [
+    {
+      "id": "d3a669b6-8a5e-43fb-a9cc-acaad103ea12",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "72c2285c-102d-4b08-9d39-6a1701a88b8e",
+      "name": "Buscar Carrinhos",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        250,
+        -100
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM carrinho WHERE status IN ('PENSANDO', 'AGUARDANDO') AND (proxima_mensagem_em IS NULL OR proxima_mensagem_em <= now()) ORDER BY criado_em ASC;"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "SELECIONE",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "a902da62-9309-46cf-8ada-d52f9470b07d",
+      "name": "Buscar Lembretes",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        250,
+        150
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT a.id, a.cliente_id, a.data_hora_inicio, a.procedimento_nome, c.nome AS cliente_nome, c.telefone AS cliente_telefone FROM agendamentos a JOIN clientes c ON c.id = a.cliente_id WHERE a.data_hora_inicio BETWEEN now() + interval '20 hours' AND now() + interval '28 hours' AND a.confirmado = false AND a.lembrete_enviado = false;"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "SELECIONE",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "2eadc582-f51c-440f-8d71-ed750ad53d76",
+      "name": "Split In Batches (Carrinho)",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        500,
+        -100
+      ],
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      }
+    },
+    {
+      "id": "1b112b29-9cca-40ec-b407-7b421a3a72f7",
+      "name": "Chamar Upsell",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [
+        750,
+        -100
+      ],
+      "parameters": {
+        "workflowId": "COLOQUE_O_ID_AQUI"
+      }
+    },
+    {
+      "id": "95e577d8-9649-4bd8-89ea-f4466288fcc4",
+      "name": "Atualizar Carrinho",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1000,
+        -100
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE carrinho SET mensagens_enviadas = mensagens_enviadas + 1, ultima_mensagem_em = now(), proxima_mensagem_em = now() + (intervalo_recaptura_dias || ' days')::interval, status = COALESCE('{{ $json.novo_status }}', status) WHERE id = '{{ $json.carrinho_id }}';"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "SELECIONE",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "7cecccaa-835d-43c7-8dd3-4cca6a2f28be",
+      "name": "Log Mensagem",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1250,
+        -100
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO envio_mensagens (id, template_ref, mensagem_texto, cliente_id, carrinho_id, canal, enviado_em) VALUES (gen_random_uuid(), 'CARRINHO_REC', '{{ $json.mensagem_whatsapp }}', '{{ $json.cliente_id }}', '{{ $json.carrinho_id }}', 'whatsapp', now());"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "SELECIONE",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "86d9df8e-b197-43ef-ab98-22d9c42b34c2",
+      "name": "Enviar Lembrete",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        500,
+        150
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://sua-evolution/message/sendText/Instancia",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"number\": \"55{{ $json.cliente_telefone }}\",\n  \"textMessage\": {\n    \"text\": \"Olá {{ $json.cliente_nome.split(' ')[0] }}! Passando para lembrar do seu horário amanhã às {{ new Date($json.data_hora_inicio).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}) }} para {{ $json.procedimento_nome }}.\\n\\nVocê confirma sua presença?\\nResponda *SIM* para confirmar ou *PRECISO REMARCAR*.\"\n  }\n}"
+      },
+      "credentials": {
+        "evolutionApi": {
+          "id": "SELECIONE",
+          "name": "Evolution API"
+        }
+      }
+    },
+    {
+      "id": "0404ddb1-7fe0-4a1c-b024-34cc4f4dd092",
+      "name": "Atualizar Agendamento",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        750,
+        150
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE agendamentos SET lembrete_enviado = true, lembrete_enviado_em = now() WHERE id = '{{ $(\"Buscar Lembretes\").item.json.id }}';"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "SELECIONE",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Buscar Carrinhos",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Buscar Lembretes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Carrinhos": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches (Carrinho)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split In Batches (Carrinho)": {
+      "main": [
+        [
+          {
+            "node": "Chamar Upsell",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chamar Upsell": {
+      "main": [
+        [
+          {
+            "node": "Atualizar Carrinho",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atualizar Carrinho": {
+      "main": [
+        [
+          {
+            "node": "Log Mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Mensagem": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches (Carrinho)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Lembretes": {
+      "main": [
+        [
+          {
+            "node": "Enviar Lembrete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Lembrete": {
+      "main": [
+        [
+          {
+            "node": "Atualizar Agendamento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "versionId": "60675011-fcbf-4a5f-9420-6bc85dd23428"
+}

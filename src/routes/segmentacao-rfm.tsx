@@ -46,39 +46,23 @@ const SEGMENTO_CONFIG: Record<
   RFMSegmento,
   { label: string; cor: string; bg: string; bordas: string; icon: React.ReactNode; pizza: string }
 > = {
-  Campeoes: {
-    label: "Campeões",
+  OURO: {
+    label: "Ouro",
     cor: "text-amber-700",
     bg: "bg-amber-50",
     bordas: "border-amber-300",
     icon: <Trophy className="h-3.5 w-3.5" />,
     pizza: "#f59e0b",
   },
-  Leais: {
-    label: "Leais",
-    cor: "text-emerald-700",
-    bg: "bg-emerald-50",
-    bordas: "border-emerald-300",
+  PRATA: {
+    label: "Prata",
+    cor: "text-slate-700",
+    bg: "bg-slate-100",
+    bordas: "border-slate-300",
     icon: <Star className="h-3.5 w-3.5" />,
-    pizza: "#10b981",
+    pizza: "#94a3b8",
   },
-  Potencial: {
-    label: "Potencial",
-    cor: "text-blue-700",
-    bg: "bg-blue-50",
-    bordas: "border-blue-300",
-    icon: <TrendingUp className="h-3.5 w-3.5" />,
-    pizza: "#3b82f6",
-  },
-  Novos: {
-    label: "Novos",
-    cor: "text-violet-700",
-    bg: "bg-violet-50",
-    bordas: "border-violet-300",
-    icon: <Sparkles className="h-3.5 w-3.5" />,
-    pizza: "#8b5cf6",
-  },
-  Em_Risco: {
+  EM_RISCO: {
     label: "Em Risco",
     cor: "text-orange-700",
     bg: "bg-orange-50",
@@ -86,24 +70,16 @@ const SEGMENTO_CONFIG: Record<
     icon: <AlertTriangle className="h-3.5 w-3.5" />,
     pizza: "#f97316",
   },
-  Inativos: {
-    label: "Inativos",
-    cor: "text-slate-600",
-    bg: "bg-slate-50",
-    bordas: "border-slate-300",
-    icon: <Users className="h-3.5 w-3.5" />,
-    pizza: "#94a3b8",
-  },
-  Perdidos: {
-    label: "Perdidos",
+  PERDIDA: {
+    label: "Perdida",
     cor: "text-rose-700",
     bg: "bg-rose-50",
     bordas: "border-rose-300",
     icon: <XCircle className="h-3.5 w-3.5" />,
     pizza: "#f43f5e",
   },
-  Indefinido: {
-    label: "Indefinido",
+  SEM_COMPRA: {
+    label: "Sem Compra",
     cor: "text-gray-500",
     bg: "bg-gray-50",
     bordas: "border-gray-200",
@@ -112,9 +88,13 @@ const SEGMENTO_CONFIG: Record<
   },
 };
 
-function BadgeSegmento({ segmento }: { segmento: RFMSegmento | null }) {
-  const s = segmento ?? "Indefinido";
-  const cfg = SEGMENTO_CONFIG[s];
+function getSegmentoConfig(seg: string | null) {
+  const norm = (seg ?? "SEM_COMPRA").trim().toUpperCase() as RFMSegmento;
+  return { seg: norm, cfg: SEGMENTO_CONFIG[norm] ?? SEGMENTO_CONFIG["SEM_COMPRA"] };
+}
+
+function BadgeSegmento({ segmento }: { segmento: string | null }) {
+  const { cfg } = getSegmentoConfig(segmento);
   return (
     <span
       className={cn(
@@ -147,21 +127,27 @@ function SegmentacaoRFMPage() {
   // Filtragem por segmento
   const filtrados = useMemo(() => {
     if (filtroSegmento === "todos") return data;
-    return data.filter((c) => c.rfm_segmento === filtroSegmento);
+    return data.filter((c) => {
+      const { seg } = getSegmentoConfig(c.rfm_segmento);
+      return seg === filtroSegmento;
+    });
   }, [data, filtroSegmento]);
 
   // Dados para o gráfico de pizza
   const pizzaData = useMemo(() => {
     const contagem: Partial<Record<RFMSegmento, number>> = {};
     for (const c of data) {
-      const seg = c.rfm_segmento ?? "Indefinido";
+      const { seg } = getSegmentoConfig(c.rfm_segmento);
       contagem[seg] = (contagem[seg] ?? 0) + 1;
     }
-    return Object.entries(contagem).map(([seg, value]) => ({
-      name: SEGMENTO_CONFIG[seg as RFMSegmento]?.label ?? seg,
-      value,
-      cor: SEGMENTO_CONFIG[seg as RFMSegmento]?.pizza ?? "#ccc",
-    }));
+    return Object.entries(contagem).map(([seg, value]) => {
+      const { cfg } = getSegmentoConfig(seg);
+      return {
+        name: cfg.label,
+        value,
+        cor: cfg.pizza,
+      };
+    });
   }, [data]);
 
   const formatBRL = (v: number | null) =>
@@ -209,31 +195,36 @@ function SegmentacaoRFMPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Cards de segmentos */}
         <div className="lg:col-span-2 grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {(Object.entries(SEGMENTO_CONFIG) as [RFMSegmento, typeof SEGMENTO_CONFIG[RFMSegmento]][])
-            .filter(([seg]) => seg !== "Indefinido")
-            .map(([seg, cfg]) => {
-              const count = data.filter((c) => c.rfm_segmento === seg).length;
-              return (
-                <button
-                  key={seg}
-                  id={`card-seg-${seg}`}
-                  onClick={() => setFiltroSegmento(filtroSegmento === seg ? "todos" : seg)}
-                  className={cn(
-                    "rounded-xl border p-4 text-left transition-all hover:shadow-md",
-                    filtroSegmento === seg
-                      ? `${cfg.bg} ${cfg.bordas} shadow-sm`
-                      : "bg-card border-border hover:border-primary/30"
-                  )}
-                >
-                  <div className={cn("flex items-center gap-1.5 mb-2", cfg.cor)}>
-                    {cfg.icon}
-                    <span className="text-[11px] font-semibold uppercase tracking-wide">{cfg.label}</span>
-                  </div>
-                  <p className={cn("text-3xl font-bold", cfg.cor)}>{count}</p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">clientes</p>
-                </button>
-              );
-            })}
+          {loading ? (
+            <div className="col-span-full h-32 flex items-center justify-center text-muted-foreground text-sm animate-pulse">
+              Carregando segmentos...
+            </div>
+          ) : (
+            (Object.entries(SEGMENTO_CONFIG) as [RFMSegmento, typeof SEGMENTO_CONFIG[RFMSegmento]])
+              .map(([seg, cfg]) => {
+                const count = data.filter((c) => getSegmentoConfig(c.rfm_segmento).seg === seg).length;
+                return (
+                  <button
+                    key={seg}
+                    id={`card-seg-${seg}`}
+                    onClick={() => setFiltroSegmento(filtroSegmento === seg ? "todos" : seg)}
+                    className={cn(
+                      "rounded-xl border p-4 text-left transition-all hover:shadow-md",
+                      filtroSegmento === seg
+                        ? `${cfg.bg} ${cfg.bordas} shadow-sm`
+                        : "bg-card border-border hover:border-primary/30"
+                    )}
+                  >
+                    <div className={cn("flex items-center gap-1.5 mb-2", cfg.cor)}>
+                      {cfg.icon}
+                      <span className="text-[11px] font-semibold uppercase tracking-wide">{cfg.label}</span>
+                    </div>
+                    <p className={cn("text-3xl font-bold", cfg.cor)}>{count}</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">clientes</p>
+                  </button>
+                );
+              })
+          )}
         </div>
 
         {/* Pizza chart */}

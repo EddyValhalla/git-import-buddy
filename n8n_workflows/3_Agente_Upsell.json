@@ -1,0 +1,103 @@
+{
+  "name": "3_Agente_Upsell",
+  "nodes": [
+    {
+      "id": "51bd23fa-0277-460c-aa7c-15a34f8c2a4d",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "4ee7902a-7265-4b4b-9fe1-e7a1e0e0afa0",
+      "name": "Agente Upsell",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        250,
+        0
+      ],
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json }}",
+        "options": {
+          "systemMessage": "Você é a assistente de nutrição e vendas da Lumière Estética Premium. Contata pacientes com interesse mas sem fechamento (carrinho), com cuidado genuíno e cross-sell quando oportuno. DADOS: {{$json.cliente_nome}}, {{$json.procedimento_interesse}}, {{$json.valor_estimado}}, {{$json.mensagens_enviadas}}. REGRAS: 1) nunca pressionar, tom premium; 2) tentativas < 2 = nutrir (dúvidas, benefício) sem fechar; tentativas >= 2 = sugerir que a agenda está com poucos horários e reservar avaliação; 3) desinteresse = encerrar educadamente e recomendar DESCARTADO; 4) cross-sell leve: Botox→Preenchimento labial, Limpeza de pele→Peeling, Drenagem→Radiofrequência, Preenchimento→Bioestimulador, Depilação a laser→Pacote de sessões; 5) dúvida técnica ou negociação pesada = transbordo=true. SAÍDA: JSON com mensagem_whatsapp (formatação do zap), novo_status, transbordo."
+        }
+      }
+    },
+    {
+      "id": "dd031f27-4e35-42f2-a29a-cab472e289b2",
+      "name": "Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        250,
+        200
+      ],
+      "parameters": {
+        "model": "gpt-4o-mini"
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "SELECIONE",
+          "name": "OpenAI"
+        }
+      }
+    },
+    {
+      "id": "466a4a12-1a5f-4170-a331-594a4a523c66",
+      "name": "Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        500,
+        200
+      ],
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"mensagem_whatsapp\": { \"type\": \"string\" },\n    \"novo_status\": { \"type\": \"string\", \"enum\": [\"AGUARDANDO\", \"CONVERTIDO\", \"DESCARTADO\"] },\n    \"transbordo\": { \"type\": \"boolean\" }\n  }\n}"
+      }
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Agente Upsell",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agente Upsell",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Agente Upsell",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "versionId": "7cc3dd8f-405a-42bd-b519-62fef1128f0f"
+}

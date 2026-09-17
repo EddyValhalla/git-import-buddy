@@ -13,6 +13,9 @@ import {
   Zap,
   Megaphone,
   Activity,
+  ShoppingCart,
+  Package,
+  ShieldAlert,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
@@ -38,6 +41,10 @@ const NAV: NavItem[] = [
   { to: "/financeiro", label: "Financeiro", icon: <Wallet className="h-4 w-4" />, roles: ["admin"] },
   { to: "/configuracoes", label: "Configurações", icon: <Settings className="h-4 w-4" />, roles: ["admin"] },
   // ── CRM Estratégico (Fase 4) ──────────────────────────────────────────────
+  { to: "/carrinho", label: "Carrinho", icon: <ShoppingCart className="h-4 w-4" />, roles: ["admin", "atendente"], groupLabel: "Vendas" },
+  { to: "/pacotes", label: "Pacotes & Sessões", icon: <Package className="h-4 w-4" />, roles: ["admin", "atendente"] },
+  { to: "/relatorios", label: "Relatórios", icon: <Activity className="h-4 w-4" />, roles: ["admin"], groupLabel: "Auditoria" },
+  { to: "/analista", label: "Aprovação IA", icon: <ShieldAlert className="h-4 w-4" />, roles: ["admin", "atendente"] },
   { to: "/segmentacao-rfm", label: "Segmentação RFM", icon: <PieChart className="h-4 w-4" />, roles: ["admin"], groupLabel: "CRM Estratégico" },
   { to: "/fluxos-automacao", label: "Fluxos", icon: <Zap className="h-4 w-4" />, roles: ["admin"] },
   { to: "/campanhas", label: "Campanhas", icon: <Megaphone className="h-4 w-4" />, roles: ["admin"] },

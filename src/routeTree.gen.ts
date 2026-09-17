@@ -11,15 +11,21 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AgendaRouteImport } from './routes/agenda'
+import { Route as AnalistaRouteImport } from './routes/analista'
 import { Route as AtendimentoRouteImport } from './routes/atendimento'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CampanhasRouteImport } from './routes/campanhas'
+import { Route as CarrinhoRouteImport } from './routes/carrinho'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as DiagnosticosRouteImport } from './routes/diagnosticos'
 import { Route as FinanceiroRouteImport } from './routes/financeiro'
 import { Route as FluxosAutomacaoRouteImport } from './routes/fluxos-automacao'
 import { Route as KanbanRouteImport } from './routes/kanban'
+import { Route as PacotesRouteImport } from './routes/pacotes'
+import { Route as RelatoriosRouteImport } from './routes/relatorios'
 import { Route as SegmentacaoRfmRouteImport } from './routes/segmentacao-rfm'
+import { Route as AgendarTokenRouteImport } from './routes/agendar.$token'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -29,6 +35,11 @@ const IndexRoute = IndexRouteImport.update({
 const AgendaRoute = AgendaRouteImport.update({
   id: '/agenda',
   path: '/agenda',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AnalistaRoute = AnalistaRouteImport.update({
+  id: '/analista',
+  path: '/analista',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AtendimentoRoute = AtendimentoRouteImport.update({
@@ -46,9 +57,19 @@ const CampanhasRoute = CampanhasRouteImport.update({
   path: '/campanhas',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CarrinhoRoute = CarrinhoRouteImport.update({
+  id: '/carrinho',
+  path: '/carrinho',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
   id: '/configuracoes',
   path: '/configuracoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DiagnosticosRoute = DiagnosticosRouteImport.update({
@@ -71,106 +92,163 @@ const KanbanRoute = KanbanRouteImport.update({
   path: '/kanban',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PacotesRoute = PacotesRouteImport.update({
+  id: '/pacotes',
+  path: '/pacotes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RelatoriosRoute = RelatoriosRouteImport.update({
+  id: '/relatorios',
+  path: '/relatorios',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SegmentacaoRfmRoute = SegmentacaoRfmRouteImport.update({
   id: '/segmentacao-rfm',
   path: '/segmentacao-rfm',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AgendarTokenRoute = AgendarTokenRouteImport.update({
+  id: '/agendar/$token',
+  path: '/agendar/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/agenda': typeof AgendaRoute
+  '/analista': typeof AnalistaRoute
   '/atendimento': typeof AtendimentoRoute
   '/auth': typeof AuthRoute
   '/campanhas': typeof CampanhasRoute
+  '/carrinho': typeof CarrinhoRoute
   '/configuracoes': typeof ConfiguracoesRoute
+  '/dashboard': typeof DashboardRoute
   '/diagnosticos': typeof DiagnosticosRoute
   '/financeiro': typeof FinanceiroRoute
   '/fluxos-automacao': typeof FluxosAutomacaoRoute
   '/kanban': typeof KanbanRoute
+  '/pacotes': typeof PacotesRoute
+  '/relatorios': typeof RelatoriosRoute
   '/segmentacao-rfm': typeof SegmentacaoRfmRoute
+  '/agendar/$token': typeof AgendarTokenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/agenda': typeof AgendaRoute
+  '/analista': typeof AnalistaRoute
   '/atendimento': typeof AtendimentoRoute
   '/auth': typeof AuthRoute
   '/campanhas': typeof CampanhasRoute
+  '/carrinho': typeof CarrinhoRoute
   '/configuracoes': typeof ConfiguracoesRoute
+  '/dashboard': typeof DashboardRoute
   '/diagnosticos': typeof DiagnosticosRoute
   '/financeiro': typeof FinanceiroRoute
   '/fluxos-automacao': typeof FluxosAutomacaoRoute
   '/kanban': typeof KanbanRoute
+  '/pacotes': typeof PacotesRoute
+  '/relatorios': typeof RelatoriosRoute
   '/segmentacao-rfm': typeof SegmentacaoRfmRoute
+  '/agendar/$token': typeof AgendarTokenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/agenda': typeof AgendaRoute
+  '/analista': typeof AnalistaRoute
   '/atendimento': typeof AtendimentoRoute
   '/auth': typeof AuthRoute
   '/campanhas': typeof CampanhasRoute
+  '/carrinho': typeof CarrinhoRoute
   '/configuracoes': typeof ConfiguracoesRoute
+  '/dashboard': typeof DashboardRoute
   '/diagnosticos': typeof DiagnosticosRoute
   '/financeiro': typeof FinanceiroRoute
   '/fluxos-automacao': typeof FluxosAutomacaoRoute
   '/kanban': typeof KanbanRoute
+  '/pacotes': typeof PacotesRoute
+  '/relatorios': typeof RelatoriosRoute
   '/segmentacao-rfm': typeof SegmentacaoRfmRoute
+  '/agendar/$token': typeof AgendarTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/agenda'
+    | '/analista'
     | '/atendimento'
     | '/auth'
     | '/campanhas'
+    | '/carrinho'
     | '/configuracoes'
+    | '/dashboard'
     | '/diagnosticos'
     | '/financeiro'
     | '/fluxos-automacao'
     | '/kanban'
+    | '/pacotes'
+    | '/relatorios'
     | '/segmentacao-rfm'
+    | '/agendar/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/agenda'
+    | '/analista'
     | '/atendimento'
     | '/auth'
     | '/campanhas'
+    | '/carrinho'
     | '/configuracoes'
+    | '/dashboard'
     | '/diagnosticos'
     | '/financeiro'
     | '/fluxos-automacao'
     | '/kanban'
+    | '/pacotes'
+    | '/relatorios'
     | '/segmentacao-rfm'
+    | '/agendar/$token'
   id:
     | '__root__'
     | '/'
     | '/agenda'
+    | '/analista'
     | '/atendimento'
     | '/auth'
     | '/campanhas'
+    | '/carrinho'
     | '/configuracoes'
+    | '/dashboard'
     | '/diagnosticos'
     | '/financeiro'
     | '/fluxos-automacao'
     | '/kanban'
+    | '/pacotes'
+    | '/relatorios'
     | '/segmentacao-rfm'
+    | '/agendar/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AgendaRoute: typeof AgendaRoute
+  AnalistaRoute: typeof AnalistaRoute
   AtendimentoRoute: typeof AtendimentoRoute
   AuthRoute: typeof AuthRoute
   CampanhasRoute: typeof CampanhasRoute
+  CarrinhoRoute: typeof CarrinhoRoute
   ConfiguracoesRoute: typeof ConfiguracoesRoute
+  DashboardRoute: typeof DashboardRoute
   DiagnosticosRoute: typeof DiagnosticosRoute
   FinanceiroRoute: typeof FinanceiroRoute
   FluxosAutomacaoRoute: typeof FluxosAutomacaoRoute
   KanbanRoute: typeof KanbanRoute
+  PacotesRoute: typeof PacotesRoute
+  RelatoriosRoute: typeof RelatoriosRoute
   SegmentacaoRfmRoute: typeof SegmentacaoRfmRoute
+  AgendarTokenRoute: typeof AgendarTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -187,6 +265,13 @@ declare module '@tanstack/react-router' {
       path: '/agenda'
       fullPath: '/agenda'
       preLoaderRoute: typeof AgendaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/analista': {
+      id: '/analista'
+      path: '/analista'
+      fullPath: '/analista'
+      preLoaderRoute: typeof AnalistaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/atendimento': {
@@ -210,11 +295,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CampanhasRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/carrinho': {
+      id: '/carrinho'
+      path: '/carrinho'
+      fullPath: '/carrinho'
+      preLoaderRoute: typeof CarrinhoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/configuracoes': {
       id: '/configuracoes'
       path: '/configuracoes'
       fullPath: '/configuracoes'
       preLoaderRoute: typeof ConfiguracoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/diagnosticos': {
@@ -245,11 +344,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof KanbanRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pacotes': {
+      id: '/pacotes'
+      path: '/pacotes'
+      fullPath: '/pacotes'
+      preLoaderRoute: typeof PacotesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/relatorios': {
+      id: '/relatorios'
+      path: '/relatorios'
+      fullPath: '/relatorios'
+      preLoaderRoute: typeof RelatoriosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/segmentacao-rfm': {
       id: '/segmentacao-rfm'
       path: '/segmentacao-rfm'
       fullPath: '/segmentacao-rfm'
       preLoaderRoute: typeof SegmentacaoRfmRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agendar/$token': {
+      id: '/agendar/$token'
+      path: '/agendar/$token'
+      fullPath: '/agendar/$token'
+      preLoaderRoute: typeof AgendarTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -258,15 +378,21 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AgendaRoute: AgendaRoute,
+  AnalistaRoute: AnalistaRoute,
   AtendimentoRoute: AtendimentoRoute,
   AuthRoute: AuthRoute,
   CampanhasRoute: CampanhasRoute,
+  CarrinhoRoute: CarrinhoRoute,
   ConfiguracoesRoute: ConfiguracoesRoute,
+  DashboardRoute: DashboardRoute,
   DiagnosticosRoute: DiagnosticosRoute,
   FinanceiroRoute: FinanceiroRoute,
   FluxosAutomacaoRoute: FluxosAutomacaoRoute,
   KanbanRoute: KanbanRoute,
+  PacotesRoute: PacotesRoute,
+  RelatoriosRoute: RelatoriosRoute,
   SegmentacaoRfmRoute: SegmentacaoRfmRoute,
+  AgendarTokenRoute: AgendarTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

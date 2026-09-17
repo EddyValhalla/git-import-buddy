@@ -71,7 +71,7 @@ export function ConclusaoModal({ open, card, onSave, onCancel }: ConclusaoModalP
     });
   };
 
-  const isFormValid = Boolean(profissionalId && loteProduto.trim() && dataRetorno);
+  const isFormValid = Boolean(profissionalId && loteProduto.trim());
 
   return (
     <Dialog
@@ -151,7 +151,7 @@ export function ConclusaoModal({ open, card, onSave, onCancel }: ConclusaoModalP
 
           {/* Data de Retorno Sugerida */}
           <div className="space-y-1.5">
-            <Label htmlFor="concluir-retorno">Data de Retorno Sugerida *</Label>
+            <Label htmlFor="concluir-retorno">Data de Retorno Sugerida (Opcional)</Label>
             <Input
               id="concluir-retorno"
               type="date"

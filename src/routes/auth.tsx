@@ -30,7 +30,7 @@ function AuthPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!loading && user) navigate({ to: "/" });
+    if (!loading && user) navigate({ to: "/kanban" });
   }, [user, loading, navigate]);
 
   const onSignIn = async (e: React.FormEvent) => {
@@ -40,7 +40,7 @@ function AuthPage() {
       const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       if (error) throw error;
       toast.success("Bem-vinda de volta!");
-      navigate({ to: "/" });
+      navigate({ to: "/kanban" });
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Falha no login";
       toast.error(
@@ -59,13 +59,13 @@ function AuthPage() {
         email: email.trim(),
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
+          emailRedirectTo: `${window.location.origin}/kanban`,
           data: { nome: nome.trim() },
         },
       });
       if (error) throw error;
       toast.success("Conta criada! Você já está logada.");
-      navigate({ to: "/" });
+      navigate({ to: "/kanban" });
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Falha ao criar conta";
       toast.error(

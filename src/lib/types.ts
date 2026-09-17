@@ -46,16 +46,12 @@ export interface Cliente {
   rfm_segmento?: RFMSegmento;
 }
 
-/** Valores possíveis de segmento RFM */
 export type RFMSegmento =
-  | "Campeoes"
-  | "Leais"
-  | "Potencial"
-  | "Novos"
-  | "Em_Risco"
-  | "Inativos"
-  | "Perdidos"
-  | "Indefinido";
+  | "OURO"
+  | "PRATA"
+  | "EM_RISCO"
+  | "PERDIDA"
+  | "SEM_COMPRA";
 
 export interface Mensagem {
   id: string;
@@ -95,6 +91,11 @@ export interface Agendamento {
   procedimento_name?: string;
   duracao_minutos?: number;
   updated_at?: string;
+  confirmado?: boolean;
+  confirmado_em?: string;
+  lembrete_enviado?: boolean;
+  token_agendamento?: string;
+  origem_agendamento?: string;
 }
 
 export interface FotoPaciente {
@@ -117,6 +118,53 @@ export interface CrossellRegra {
 }
 
 // ── FASE 4 ────────────────────────────────────────────────────────────────────
+
+/** Status do Carrinho */
+export type StatusCarrinho = "PENSANDO" | "AGUARDANDO" | "CONVERTIDO" | "DESCARTADO";
+
+/** Carrinho - Orçamentos em aberto e negociações */
+export interface Carrinho {
+  id: string;
+  cliente_id: string;
+  status: StatusCarrinho;
+  procedimento_interesse: string | null;
+  valor_estimado: number | null;
+  motivo_interesse: string | null;
+  mensagens_enviadas: number;
+  ultima_mensagem_em: string | null;
+  proxima_mensagem_em: string | null;
+  intervalo_recaptura_dias: number;
+  criado_em?: string;
+  atualizado_em?: string;
+  finalizado_por?: string | null;
+  finalizado_em?: string | null;
+  motivo_finalizacao?: string | null;
+}
+
+/** Pacote de Procedimentos */
+export interface Pacote {
+  id: string;
+  cliente_id: string;
+  nome: string;
+  quantidade_sessoes: number;
+  valor_total: number;
+  status: "ATIVO" | "CONCLUIDO" | "CANCELADO";
+  criado_em?: string;
+  atualizado_em?: string;
+}
+
+/** Sessão individual dentro de um pacote */
+export interface PacoteSessao {
+  id: string;
+  pacote_id: string;
+  numero_sessao: number;
+  procedimento_id: string | null;
+  agendamento_id: string | null;
+  status: "PENDENTE" | "AGENDADA" | "REALIZADA" | "FALTOU";
+  realizada_em?: string | null;
+  criado_em?: string;
+  atualizado_em?: string;
+}
 
 /** Tipo de mensagem do fluxo de automação */
 export type TipoMensagem =
